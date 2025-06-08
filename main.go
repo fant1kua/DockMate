@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"dockmate/app"
 	"embed"
-	"go-wails-svelte5-template/app"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -21,7 +21,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "wails-template-svelte",
+		Title:  "DockMate",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
