@@ -12,8 +12,10 @@ import (
 )
 
 type App struct {
-	ctx context.Context
-	cli *client.Client
+	ctx             context.Context
+	cli             *client.Client
+	logStreamCtx    context.Context
+	logStreamCancel context.CancelFunc
 }
 
 func NewApp() *App {
@@ -146,21 +148,37 @@ func (a *App) StreamContainerLogs(containerID string) error {
 		return err
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	a.logStreamCtx = ctx
+	a.logStreamCancel = cancel
+
 	go func() {
 		defer out.Close()
 		reader := bufio.NewReader(out)
 		for {
-			line, err := reader.ReadBytes('\n')
-			if err != nil {
-				if err == io.EOF {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				line, err := reader.ReadBytes('\n')
+				if err != nil {
+					if err == io.EOF {
+						break
+					}
+					runtime.EventsEmit(a.ctx, "logStream", "ERROR: "+err.Error())
 					break
 				}
-				runtime.EventsEmit(a.ctx, "logStream", "ERROR: "+err.Error())
-				break
+				runtime.EventsEmit(a.ctx, "logStream", string(line))
 			}
-			runtime.EventsEmit(a.ctx, "logStream", string(line))
 		}
 	}()
 
 	return nil
+}
+
+func (a *App) StopContainerLogs() {
+	if a.logStreamCancel != nil {
+		a.logStreamCancel()
+		a.logStreamCancel = nil
+	}
 }

@@ -38,6 +38,10 @@ export function StopContainer(arg1) {
   return window['go']['app']['App']['StopContainer'](arg1);
 }
 
+export function StopContainerLogs() {
+  return window['go']['app']['App']['StopContainerLogs']();
+}
+
 export function StreamContainerLogs(arg1) {
   return window['go']['app']['App']['StreamContainerLogs'](arg1);
 }

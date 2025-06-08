@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { StreamContainerLogs } from "../../wailsjs/go/app/App";
+    import { StreamContainerLogs, StopContainerLogs } from "../../wailsjs/go/app/App";
     import { app } from "../../wailsjs/go/models";
 	import { EventsOff, EventsOn } from "../../wailsjs/runtime";
 	import { Terminal } from 'xterm';
@@ -36,6 +36,7 @@
 
         return () => {
             EventsOff('logStream');
+            StopContainerLogs();
             terminal.dispose();
         }
     });

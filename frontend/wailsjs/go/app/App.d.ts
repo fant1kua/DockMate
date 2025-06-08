@@ -20,4 +20,6 @@ export function StartContainer(arg1:string):Promise<void>;
 
 export function StopContainer(arg1:string):Promise<void>;
 
+export function StopContainerLogs():Promise<void>;
+
 export function StreamContainerLogs(arg1:string):Promise<void>;
