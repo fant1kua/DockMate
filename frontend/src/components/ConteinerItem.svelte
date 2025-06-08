@@ -1,0 +1,63 @@
+<script lang="ts">
+    import { StreamContainerLogs } from "../../wailsjs/go/app/App";
+    import { app } from "../../wailsjs/go/models";
+	import { EventsOff, EventsOn } from "../../wailsjs/runtime";
+	import { Terminal } from 'xterm';
+  	import 'xterm/css/xterm.css';
+
+    let { container, onClose } = $props<{
+        container: app.ContainerInfo | null;
+		onClose(): void;
+    }>();
+
+	let terminal: Terminal;
+  	let containerElement = $state<HTMLDivElement>();
+
+    $effect(() => {
+        if (!containerElement) return;
+
+        terminal = new Terminal({
+            cols: 80,
+            rows: 24,
+            theme: {
+                background: '#1e1e1e',
+                foreground: '#ffffff'
+            },
+        });
+
+        terminal.open(containerElement);
+
+        if (container) {
+            StreamContainerLogs(container.id);
+            EventsOn("logStream", (line: string) => {
+                terminal.writeln(line);
+            });
+        }
+
+        return () => {
+            EventsOff('logStream');
+            terminal.dispose();
+        }
+    });
+
+</script>
+
+{#if container}
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded-lg w-3/4 h-3/4 flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Logs for {container.names[0]}</h2>
+                <button 
+                    class="text-gray-500 hover:text-gray-700"
+                    onclick={onClose}
+                >
+                    ✕
+                </button>
+            </div>
+            <div class="flex-1 overflow-auto bg-latte-surface2 dark:bg-mocha-surface2 p-4 rounded font-mono text-sm">
+                <!-- <pre class="whitespace-pre-wrap">{logs}</pre> -->
+				<div bind:this={containerElement} class="terminal-container"></div>
+            </div>
+        </div>
+    </div>
+{/if}

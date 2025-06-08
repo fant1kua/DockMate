@@ -1,8 +1,10 @@
 package app
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
@@ -94,4 +96,71 @@ func (a *App) RestartContainer(containerID string) error {
 		return fmt.Errorf("Docker client not initialized")
 	}
 	return a.cli.ContainerRestart(a.ctx, containerID, container.StopOptions{})
+}
+
+func (a *App) RemoveContainer(containerID string) error {
+	if a.cli == nil {
+		return fmt.Errorf("Docker client not initialized")
+	}
+	return a.cli.ContainerRemove(a.ctx, containerID, container.RemoveOptions{})
+}
+
+func (a *App) GetContainerLogs(containerID string) (string, error) {
+	if a.cli == nil {
+		return "", fmt.Errorf("Docker client not initialized")
+	}
+
+	options := container.LogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+		Follow:     false, // Don't follow, we'll poll instead
+		Tail:       "100", // Get last 100 lines
+		Timestamps: true,
+	}
+
+	reader, err := a.cli.ContainerLogs(a.ctx, containerID, options)
+	if err != nil {
+		return "", fmt.Errorf("failed to get container logs: %v", err)
+	}
+	defer reader.Close()
+
+	logs, err := io.ReadAll(reader)
+	if err != nil {
+		return "", fmt.Errorf("failed to read container logs: %v", err)
+	}
+
+	return string(logs), nil
+}
+
+func (a *App) StreamContainerLogs(containerID string) error {
+	options := container.LogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+		Follow:     true,
+		Timestamps: false,
+		Tail:       "10",
+	}
+
+	out, err := a.cli.ContainerLogs(context.Background(), containerID, options)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		defer out.Close()
+		reader := bufio.NewReader(out)
+		for {
+			line, err := reader.ReadBytes('\n')
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				runtime.EventsEmit(a.ctx, "logStream", "ERROR: "+err.Error())
+				break
+			}
+			runtime.EventsEmit(a.ctx, "logStream", string(line))
+		}
+	}()
+
+	return nil
 }
