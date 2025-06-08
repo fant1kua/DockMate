@@ -1,7 +1,7 @@
 <script lang="ts">
     import { StreamContainerLogs, StopContainerLogs } from "../../wailsjs/go/app/App";
     import { app } from "../../wailsjs/go/models";
-	import { EventsOff, EventsOn } from "../../wailsjs/runtime";
+	import { EventsOff, EventsOn } from "../../wailsjs/runtime/runtime";
 	import { Terminal } from 'xterm';
   	import 'xterm/css/xterm.css';
 

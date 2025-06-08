@@ -7,14 +7,28 @@
 		RemoveContainer,
 	} from "../../wailsjs/go/app/App";
     import type { app } from "../../wailsjs/go/models";
-
-    let { onLogs } = $props<{
-        onLogs(container: app.ContainerInfo): void;
-    }>();
+    import ConteinerInspect from "./ConteinerInspect.svelte";
+    import ConteinerLogs from "./ConteinerLogs.svelte";
 
     let containers = $state<app.ContainerInfo[]>([]);
+    let container = $state<app.ContainerInfo | null>(null)
+    let action = $state<'logs' | 'inspect'>('logs')
     let loading = $state<boolean>(false);
 	let error = $state<string | null>(null);
+
+    function handleViewLogs(c: app.ContainerInfo) {
+		container = c
+        action = 'logs'
+	}
+
+    function handleViewInspect(c: app.ContainerInfo) {
+		container = c
+        action = 'inspect'
+	}
+
+    function handleClose() {
+		container = null
+	}
 
     async function loadContainers() {
 		loading = true;
@@ -131,12 +145,20 @@
                     </button>
                     <button 
                         class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-                        onclick={() => onLogs(container)}
+                        onclick={() => handleViewLogs(container)}
                     >
                         View Logs
+                    </button>
+                    <button 
+                        class="bg-green-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        onclick={() => handleViewInspect(container)}
+                    >
+                        Inspect
                     </button>
                 </div>
             </div>
         {/each}
     {/if}
 </div>
+<ConteinerLogs  container={action === 'logs' ? container : null} onClose={handleClose} />
+<ConteinerInspect  container={action === 'inspect' ? container : null} onClose={handleClose} />

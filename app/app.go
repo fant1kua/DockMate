@@ -5,8 +5,11 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
+	"time"
 
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -54,6 +57,14 @@ type ContainerInfo struct {
 	Image  string   `json:"image"`
 	Status string   `json:"status"`
 	State  string   `json:"state"`
+}
+
+type ImageInfo struct {
+	ID        string   `json:"id"`
+	Name      string   `json:"name"`
+	Size      int64    `json:"size"`
+	Tags      []string `json:"tags"`
+	CreatedAt string   `json:"createdAt"`
 }
 
 func (a *App) ListContainers() ([]ContainerInfo, error) {
@@ -105,6 +116,18 @@ func (a *App) RemoveContainer(containerID string) error {
 		return fmt.Errorf("Docker client not initialized")
 	}
 	return a.cli.ContainerRemove(a.ctx, containerID, container.RemoveOptions{})
+}
+
+func (a *App) ContainerInspect(containerID string) (string, error) {
+	if a.cli == nil {
+		return "", fmt.Errorf("Docker client not initialized")
+	}
+	_, raw, err := a.cli.ContainerInspectWithRaw(a.ctx, containerID, false)
+	if err != nil {
+		return "", fmt.Errorf("failed to get container data: %v", err)
+	}
+
+	return string(raw), nil
 }
 
 func (a *App) GetContainerLogs(containerID string) (string, error) {
@@ -181,4 +204,26 @@ func (a *App) StopContainerLogs() {
 		a.logStreamCancel()
 		a.logStreamCancel = nil
 	}
+}
+
+func (a *App) ListImages() ([]ImageInfo, error) {
+	if a.cli == nil {
+		return nil, fmt.Errorf("Docker client not initialized")
+	}
+	images, err := a.cli.ImageList(a.ctx, image.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list images: %v", err)
+	}
+
+	var imageInfos []ImageInfo
+	for _, container := range images {
+		imageInfos = append(imageInfos, ImageInfo{
+			ID:        strings.TrimPrefix(container.ID, "sha256:"),
+			Size:      container.Size,
+			Tags:      container.RepoTags,
+			CreatedAt: time.Unix(container.Created, 0).Format(time.RFC3339),
+		})
+	}
+
+	return imageInfos, nil
 }
