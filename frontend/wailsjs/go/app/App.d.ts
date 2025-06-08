@@ -8,6 +8,8 @@ export function DeleteImage(arg1:string):Promise<void>;
 
 export function DeleteVolume(arg1:string):Promise<void>;
 
+export function ExecContainer(arg1:string,arg2:string):Promise<void>;
+
 export function GetContainerLogs(arg1:string):Promise<string>;
 
 export function KillContainer(arg1:string):Promise<void>;

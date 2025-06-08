@@ -12,11 +12,12 @@
     import type { app } from "../../wailsjs/go/models";
     import ConteinerInspect from "./ConteinerInspect.svelte";
     import ConteinerLogs from "./ConteinerLogs.svelte";
+    import ContainerTerminal from "./ContainerTerminal.svelte";
     import CopyBtn from "./CopyBtn.svelte";
 
     let containers = $state<app.ContainerInfo[]>([]);
     let container = $state<app.ContainerInfo | null>(null)
-    let action = $state<'logs' | 'inspect'>('logs')
+    let action = $state<'logs' | 'inspect' | 'terminal'>('logs')
     let loading = $state<boolean>(false);
     let inAction = $state<boolean>(false);
 
@@ -30,12 +31,17 @@
         action = 'inspect'
 	}
 
+    function handleViewTerminal(c: app.ContainerInfo) {
+        container = c
+        action = 'terminal'
+    }
+
     function handleClose() {
 		container = null
 	}
 
     async function loadContainers() {
-        if (inAction) {
+        if (inAction || container !== null) {
             return
         }
 		loading = true;
@@ -204,6 +210,13 @@
                     >
                         Inspect
                     </button>
+                    <button 
+                        class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded"
+                        onclick={() => handleViewTerminal(container)}
+                        disabled={container.state !== 'running'}
+                    >
+                        Terminal
+                    </button>
                 </div>
             </div>
         {/each}
@@ -211,3 +224,4 @@
 </div>
 <ConteinerLogs  container={action === 'logs' ? container : null} onClose={handleClose} />
 <ConteinerInspect  container={action === 'inspect' ? container : null} onClose={handleClose} />
+<ContainerTerminal container={action === 'terminal' ? container : null} onClose={handleClose} />

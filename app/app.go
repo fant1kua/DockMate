@@ -279,3 +279,47 @@ func (a *App) DeleteVolume(id string) error {
 	err := a.cli.VolumeRemove(a.ctx, id, true)
 	return err
 }
+
+func (a *App) ExecContainer(containerID string, command string) error {
+	if a.cli == nil {
+		return fmt.Errorf("Docker client not initialized")
+	}
+
+	execConfig := container.ExecOptions{
+		Cmd:          []string{"/bin/sh", "-c", command},
+		AttachStdout: true,
+		AttachStderr: true,
+		AttachStdin:  true,
+		Tty:          true,
+	}
+
+	execID, err := a.cli.ContainerExecCreate(a.ctx, containerID, execConfig)
+	if err != nil {
+		return fmt.Errorf("failed to create exec instance: %v", err)
+	}
+
+	resp, err := a.cli.ContainerExecAttach(a.ctx, execID.ID, container.ExecAttachOptions{
+		Tty: true,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to attach to exec instance: %v", err)
+	}
+
+	go func() {
+		defer resp.Close() // Move defer to the start of the goroutine
+		reader := bufio.NewReader(resp.Reader)
+		for {
+			line, err := reader.ReadBytes('\n')
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				runtime.EventsEmit(a.ctx, "logStream", "ERROR: "+err.Error())
+				break
+			}
+			runtime.EventsEmit(a.ctx, "logStream", string(line))
+		}
+	}()
+
+	return nil
+}
