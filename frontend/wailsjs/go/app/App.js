@@ -6,6 +6,10 @@ export function ContainerInspect(arg1) {
   return window['go']['app']['App']['ContainerInspect'](arg1);
 }
 
+export function CreateAndStartContainer(arg1) {
+  return window['go']['app']['App']['CreateAndStartContainer'](arg1);
+}
+
 export function DeleteImage(arg1) {
   return window['go']['app']['App']['DeleteImage'](arg1);
 }

@@ -150,7 +150,10 @@
                     <div>{container.names.join(', ')}</div>
                     
                     <div class="font-bold">Image:</div>
-                    <div>{container.image}</div>
+                    <div class="flex items-center gap-2">
+                        <span class="truncate max-w-[200px]">{container.image}</span>
+                        <CopyBtn value={container.image} />
+                    </div>
                     
                     <div class="font-bold">Status:</div>
                     <div>{container.status}</div>
@@ -161,12 +164,12 @@
                 
                 <div class="mt-4 flex gap-2">
                     <button
-                        aria-label="start"
+                        aria-label="Start Container"
                         class="text-green-500 hover:text-green-600 px-3 py-1 rounded disabled:opacity-50"
                         onclick={() => handleStartContainer(container.id)}
-                        disabled={inAction || container.state === 'running'}
+                        disabled={inAction}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M4 0v6h1.7l.2.7l.2.6h.1l1.2-.6l1.8 1.8l-.6 1.2v.1l.6.2l.7.2v.2L16 7zm.5 10.5c-.2 0-.4.1-.5.2c-.3.2-.5.5-.5.8s.2.7.5.8c.1.1.3.2.5.2c.6 0 1-.4 1-1s-.4-1-1-1"/><path fill="currentColor" d="M9 12v-1l-1.1-.4c-.1-.3-.2-.6-.4-.9l.5-1l-.7-.7l-1 .5c-.3-.2-.6-.3-.9-.4L5 7H4l-.4 1.1c-.3.1-.6.2-.9.4l-1-.5l-.7.7l.5 1.1c-.2.3-.3.6-.4.9L0 11v1l1.1.4c.1.3.2.6.4.9l-.5 1l.7.7l1.1-.5c.3.2.6.3.9.4L4 16h1l.4-1.1c.3-.1.6-.2.9-.4l1 .5l.7-.7l-.5-1.1c.2-.3.3-.6.4-.9zm-4.5 1.5c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
                     </button>
                     <button 
                         aria-label="Stop"

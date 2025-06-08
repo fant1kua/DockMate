@@ -4,6 +4,8 @@ import {app} from '../models';
 
 export function ContainerInspect(arg1:string):Promise<string>;
 
+export function CreateAndStartContainer(arg1:string):Promise<void>;
+
 export function DeleteImage(arg1:string):Promise<void>;
 
 export function DeleteVolume(arg1:string):Promise<void>;

@@ -3,6 +3,7 @@
     import {
         DeleteImage,
         ListImages,
+        CreateAndStartContainer,
 	} from "../../wailsjs/go/app/App";
     import type { app } from "../../wailsjs/go/models";
 
@@ -35,6 +36,18 @@
 			await loadImages();
 		} catch (e) {
             toast.error(isError(e) ? e.message : 'Failed to delete image');
+		} finally {
+            inAction = false
+        }
+    }
+
+    async function handleStartContainer(id:string) {
+        try {
+            inAction = true
+			await CreateAndStartContainer(id);
+            toast.success('Container started successfully');
+		} catch (e) {
+            toast.error(isError(e) ? e.message : 'Failed to start container');
 		} finally {
             inAction = false
         }
@@ -78,6 +91,14 @@
                 </div>
 
                 <div class="mt-4 flex gap-2">
+                    <button
+                        aria-label="Start Container"
+                        class="text-green-500 hover:text-green-600 px-3 py-1 rounded disabled:opacity-50"
+                        onclick={() => handleStartContainer(image.id)}
+                        disabled={inAction}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+                    </button>
                     <button
                         aria-label="Remove"
                         class="text-red-500 hover:text-red-600 px-3 py-1 rounded disabled:opacity-50"
