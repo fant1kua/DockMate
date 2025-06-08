@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/volume"
@@ -20,10 +21,20 @@ type App struct {
 	cli             *client.Client
 	logStreamCtx    context.Context
 	logStreamCancel context.CancelFunc
+	execSessions    map[string]*execSession
+}
+
+type execSession struct {
+	ID     string
+	Resp   types.HijackedResponse
+	Reader *bufio.Reader
+	Path   string
 }
 
 func NewApp() *App {
-	return &App{}
+	return &App{
+		execSessions: make(map[string]*execSession),
+	}
 }
 
 func Startup(a *App, ctx context.Context) {
@@ -285,41 +296,110 @@ func (a *App) ExecContainer(containerID string, command string) error {
 		return fmt.Errorf("Docker client not initialized")
 	}
 
-	execConfig := container.ExecOptions{
-		Cmd:          []string{"/bin/sh", "-c", command},
-		AttachStdout: true,
-		AttachStderr: true,
-		AttachStdin:  true,
-		Tty:          true,
-	}
+	// Check if we already have an exec session for this container
+	session, exists := a.execSessions[containerID]
+	if !exists {
+		// Create new exec session
+		execConfig := container.ExecOptions{
+			Cmd:          []string{"/bin/sh"},
+			AttachStdout: true,
+			AttachStderr: true,
+			AttachStdin:  true,
+			Tty:          true,
+		}
 
-	execID, err := a.cli.ContainerExecCreate(a.ctx, containerID, execConfig)
-	if err != nil {
-		return fmt.Errorf("failed to create exec instance: %v", err)
-	}
+		execID, err := a.cli.ContainerExecCreate(a.ctx, containerID, execConfig)
+		if err != nil {
+			return fmt.Errorf("failed to create exec instance: %v", err)
+		}
 
-	resp, err := a.cli.ContainerExecAttach(a.ctx, execID.ID, container.ExecAttachOptions{
-		Tty: true,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to attach to exec instance: %v", err)
-	}
+		resp, err := a.cli.ContainerExecAttach(a.ctx, execID.ID, container.ExecAttachOptions{
+			Tty: true,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to attach to exec instance: %v", err)
+		}
 
-	go func() {
-		defer resp.Close() // Move defer to the start of the goroutine
-		reader := bufio.NewReader(resp.Reader)
-		for {
-			line, err := reader.ReadBytes('\n')
-			if err != nil {
-				if err == io.EOF {
+		session = &execSession{
+			ID:     execID.ID,
+			Resp:   resp,
+			Reader: bufio.NewReader(resp.Reader),
+			Path:   "/",
+		}
+		a.execSessions[containerID] = session
+
+		// Start reading output in a goroutine
+		go func() {
+			defer resp.Close()
+			for {
+				line, err := session.Reader.ReadBytes('\n')
+				if err != nil {
+					if err == io.EOF {
+						break
+					}
+					runtime.EventsEmit(a.ctx, "logStream", "ERROR: "+err.Error())
 					break
 				}
-				runtime.EventsEmit(a.ctx, "logStream", "ERROR: "+err.Error())
-				break
+				// Check if this is a path update line
+				if strings.HasPrefix(string(line), "__PATH_UPDATE__") {
+					path := strings.TrimPrefix(string(line), "__PATH_UPDATE__")
+					path = strings.TrimSpace(path)
+					session.Path = path
+					runtime.EventsEmit(a.ctx, "pathUpdate", path)
+				} else {
+					runtime.EventsEmit(a.ctx, "logStream", string(line))
+				}
 			}
-			runtime.EventsEmit(a.ctx, "logStream", string(line))
+		}()
+
+		// Get initial path
+		_, err = session.Resp.Conn.Write([]byte("pwd | sed 's/^/__PATH_UPDATE__/'\n"))
+		if err != nil {
+			return fmt.Errorf("failed to get initial path: %v", err)
 		}
-	}()
+	}
+
+	// If it's a cd command, update the path
+	if strings.HasPrefix(command, "cd ") {
+		newPath := strings.TrimSpace(strings.TrimPrefix(command, "cd"))
+		if newPath == "" {
+			newPath = "/"
+		}
+		session.Path = newPath
+	}
+
+	// Write the command to the shell
+	_, err := session.Resp.Conn.Write([]byte(command + "\n"))
+	if err != nil {
+		return fmt.Errorf("failed to write command: %v", err)
+	}
+
+	// If it's a pwd command, update the path
+	if command == "pwd" {
+		// Wait a bit for the command to complete
+		time.Sleep(100 * time.Millisecond)
+		// Read the path from the output
+		line, err := session.Reader.ReadBytes('\n')
+		if err == nil {
+			path := strings.TrimSpace(string(line))
+			session.Path = path
+			runtime.EventsEmit(a.ctx, "pathUpdate", path)
+		}
+	}
 
 	return nil
+}
+
+func (a *App) GetCurrentPath(containerID string) string {
+	if session, exists := a.execSessions[containerID]; exists {
+		return session.Path
+	}
+	return "/"
+}
+
+func (a *App) CloseContainerSession(containerID string) {
+	if session, exists := a.execSessions[containerID]; exists {
+		session.Resp.Close()
+		delete(a.execSessions, containerID)
+	}
 }

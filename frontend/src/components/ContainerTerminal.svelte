@@ -5,7 +5,7 @@
     import { WebglAddon } from 'xterm-addon-webgl';
     import { onMount, onDestroy } from 'svelte';
     import type { app } from "../../wailsjs/go/models";
-    import { StreamContainerLogs, StopContainerLogs, ExecContainer } from "../../wailsjs/go/app/App";
+    import { StreamContainerLogs, StopContainerLogs, ExecContainer, CloseContainerSession, GetCurrentPath } from "../../wailsjs/go/app/App";
     import { EventsOff, EventsOn } from "../../wailsjs/runtime/runtime";
 
     let { container, onClose } = $props<{
@@ -15,14 +15,23 @@
 
     let terminalElement = $state<HTMLDivElement>();
     let terminal: Terminal;
+    let currentCommand = '';
+    let currentPath = '/';
+
+    async function updatePrompt() {
+        if (container) {
+            currentPath = await GetCurrentPath(container.id);
+            terminal.write(`\r\n${currentPath} $ `);
+        }
+    }
 
     $effect(() => {
-        if (!terminalElement) return;
+        if (!terminalElement || !container) return;
 
         terminal = new Terminal({
             cursorBlink: true,
             cols: 80,
-            rows: 14,
+            rows: 24,
             theme: {
                 background: '#1e1e1e',
                 foreground: '#ffffff'
@@ -39,52 +48,59 @@
         terminal.loadAddon(webLinksAddon);
         terminal.loadAddon(webglAddon);
 
-        // Open terminal in the container
+        // Open terminal in the DOM
         terminal.open(terminalElement);
         fitAddon.fit();
 
-        terminal.open(terminalElement);
+        // Handle window resize
+        const handleResize = () => {
+            fitAddon.fit();
+        };
+        window.addEventListener('resize', handleResize);
 
-        if (container) {
-            StreamContainerLogs(container.id);
-            EventsOn("logStream", (line: string) => {
-                terminal.writeln(line);
-            });
+        // Start streaming container logs
+        StreamContainerLogs(container.id);
+        EventsOn("logStream", async (line: string) => {
+            terminal.writeln(line);
+            // Update path after each command
+            await updatePrompt();
+        });
 
-            let currentCommand = ''
-
-            terminal.onData((data) => {
-                if (data === '\r') {
-                    // Enter key pressed
-                    terminal.write('\r\n');
-                    if (currentCommand.trim()) {
-                        console.log(currentCommand)
-                        ExecContainer(container.id, currentCommand).catch((error) => {
-                            terminal.writeln(`Error executing command: ${error}`);
-                        });
-                    }
+        // Handle user input
+        terminal.onData((data) => {
+            if (data === '\r') {
+                // Enter key pressed
+                terminal.write('\r\n');
+                if (currentCommand.trim()) {
+                    ExecContainer(container.id, currentCommand).catch((error) => {
+                        terminal.writeln(`Error executing command: ${error}`);
+                        updatePrompt();
+                    });
                     currentCommand = '';
-                } else if (data === '\u0003') {
-                    // Ctrl+C
-                    terminal.write('^C\r\n');
-                    currentCommand = '';
-                } else if (data === '\u007F') {
-                    // Backspace
-                    if (currentCommand.length > 0) {
-                        currentCommand = currentCommand.slice(0, -1);
-                        terminal.write('\b \b');
-                    }
                 } else {
-                    // Regular character
-                    currentCommand += data;
-                    terminal.write(data);
+                    updatePrompt();
                 }
-            });
-        }
+            } else if (data === '\u007F') {
+                // Backspace
+                if (currentCommand.length > 0) {
+                    currentCommand = currentCommand.slice(0, -1);
+                    terminal.write('\b \b');
+                }
+            } else {
+                // Regular character
+                currentCommand += data;
+                terminal.write(data);
+            }
+        });
+
+        // Initial prompt
+        updatePrompt();
 
         return () => {
+            window.removeEventListener('resize', handleResize);
             EventsOff('logStream');
             StopContainerLogs();
+            CloseContainerSession(container.id);
             terminal.dispose();
         }
     });
