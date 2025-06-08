@@ -1,60 +1,71 @@
 <script lang="ts">
+    import { isError, formatBytes } from "../utils";
     import {
+        DeleteImage,
         ListImages,
 	} from "../../wailsjs/go/app/App";
     import type { app } from "../../wailsjs/go/models";
 
+    import toast from 'svelte-5-french-toast';
+    import CopyBtn from "./CopyBtn.svelte";
 
     let images = $state<app.ImageInfo[]>([]);
     let loading = $state<boolean>(false);
-	let error = $state<string | null>(null);
-
-    function formatBytes(bytes: number): string {
-        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        let size = bytes;
-        let unitIndex = 0;
-        while (size >= 1024 && unitIndex < units.length - 1) {
-            size /= 1024;
-            unitIndex++;
-        }
-        return `${size.toFixed(2)} ${units[unitIndex]}`;
-    }
+    let inAction = $state<boolean>(false);
 
     async function loadImages() {
+        if (inAction) {
+            return;
+        }
 		loading = true;
-		error = null;
 		try {
 			images = await ListImages() ?? [];
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to load containers';
+			toast.error(e instanceof Error ? e.message : 'Failed to load containers');
 		} finally {
 			loading = false;
 		}
 	}
 
-    loadImages();
+    async function handleDeleteImage(id:string) {
+        try {
+            inAction = true
+			await DeleteImage(id);
+            toast.success('Image delete');
+			await loadImages();
+		} catch (e) {
+            toast.error(isError(e) ? e.message : 'Failed to delete image');
+		} finally {
+            inAction = false
+        }
+    }
+
+    $effect(() => {
+        loadImages();
+        const interval = setInterval(loadImages, 3000);
+        return () => clearInterval(interval);
+    });
 </script>
 
 <button 
     class="w-full bg-latte-surface2 dark:bg-mocha-surface2 p-2 rounded hover:bg-latte-surface3 dark:hover:bg-mocha-surface3"
     onclick={() => loadImages()}
-    disabled={loading}
+    disabled={loading || inAction}
 >
     {loading ? 'Loading...' : 'Refresh Images'}
 </button>
 <div class="grid gap-4">
-    {#if error}
-        <div class="text-red-500 mb-4">{error}</div>
-    {/if}
-    
     {#if !images || images.length === 0}
-        <div class="text-center text-gray-500">No containers found</div>
+        <div class="text-center text-gray-500">No images found</div>
     {:else}
         {#each images as image}
             <div class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded">
                 <div class="grid grid-cols-2 gap-2">
                     <div class="font-bold">ID:</div>
-                    <div>{image.id}</div>
+                    <div class="flex items-center gap-2">
+                        <span class="truncate max-w-[200px]">{image.id}</span>
+                        <CopyBtn value={image.id} />
+                    </div>
 
                     <div class="font-bold">Tags:</div>
                     <div>{image.tags.join(',')}</div>
@@ -64,6 +75,16 @@
 
                     <div class="font-bold">Created at:</div>
                     <div>{image.createdAt}</div>
+                </div>
+
+                <div class="mt-4 flex gap-2">
+                    <button 
+                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        onclick={() => handleDeleteImage(image.id)}
+                        disabled={inAction}
+                    >
+                        Delete
+                    </button>
                 </div>
             </div>
         {/each}

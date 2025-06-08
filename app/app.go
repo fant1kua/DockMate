@@ -10,6 +10,7 @@ import (
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -60,6 +61,14 @@ type ContainerInfo struct {
 }
 
 type ImageInfo struct {
+	ID        string   `json:"id"`
+	Name      string   `json:"name"`
+	Size      int64    `json:"size"`
+	Tags      []string `json:"tags"`
+	CreatedAt string   `json:"createdAt"`
+}
+
+type VolumeInfo struct {
 	ID        string   `json:"id"`
 	Name      string   `json:"name"`
 	Size      int64    `json:"size"`
@@ -226,4 +235,32 @@ func (a *App) ListImages() ([]ImageInfo, error) {
 	}
 
 	return imageInfos, nil
+}
+
+func (a *App) DeleteImage(imageID string) error {
+	if a.cli == nil {
+		return fmt.Errorf("Docker client not initialized")
+	}
+	_, err := a.cli.ImageRemove(a.ctx, imageID, image.RemoveOptions{Force: true})
+	return err
+}
+
+func (a *App) ListVolumes() ([]VolumeInfo, error) {
+	if a.cli == nil {
+		return nil, fmt.Errorf("Docker client not initialized")
+	}
+	volumes, err := a.cli.VolumeList(a.ctx, volume.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list images: %v", err)
+	}
+
+	var volumeInfos []VolumeInfo
+	for _, vol := range volumes.Volumes {
+		volumeInfos = append(volumeInfos, VolumeInfo{
+			Name:      vol.Name,
+			CreatedAt: vol.CreatedAt,
+		})
+	}
+
+	return volumeInfos, nil
 }

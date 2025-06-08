@@ -4,11 +4,15 @@ import {app} from '../models';
 
 export function ContainerInspect(arg1:string):Promise<string>;
 
+export function DeleteImage(arg1:string):Promise<void>;
+
 export function GetContainerLogs(arg1:string):Promise<string>;
 
 export function ListContainers():Promise<Array<app.ContainerInfo>>;
 
 export function ListImages():Promise<Array<app.ImageInfo>>;
+
+export function ListVolumes():Promise<Array<app.VolumeInfo>>;
 
 export function MaximiseApp():Promise<void>;
 

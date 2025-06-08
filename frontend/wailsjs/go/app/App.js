@@ -6,6 +6,10 @@ export function ContainerInspect(arg1) {
   return window['go']['app']['App']['ContainerInspect'](arg1);
 }
 
+export function DeleteImage(arg1) {
+  return window['go']['app']['App']['DeleteImage'](arg1);
+}
+
 export function GetContainerLogs(arg1) {
   return window['go']['app']['App']['GetContainerLogs'](arg1);
 }
@@ -16,6 +20,10 @@ export function ListContainers() {
 
 export function ListImages() {
   return window['go']['app']['App']['ListImages']();
+}
+
+export function ListVolumes() {
+  return window['go']['app']['App']['ListVolumes']();
 }
 
 export function MaximiseApp() {

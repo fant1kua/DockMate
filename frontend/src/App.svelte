@@ -7,9 +7,12 @@
 
     import ContainersList from "./components/ContainersList.svelte";
     import ImagesList from "./components/ImagesList.svelte";
+    import VolumesList from "./components/VolumesList.svelte";
+
+	import {Toaster} from 'svelte-5-french-toast';
 
 	let title = "DockMate";
-	let page = $state<'containers' | 'images'>('containers')
+	let page = $state<'containers' | 'images' | 'volumes'>('containers')
 	
 
 	function QuitButton() {
@@ -24,7 +27,7 @@
 		MinimiseApp();
 	}
 
-	function handleSetPage(p: 'containers' | 'images') {
+	function handleSetPage(p: 'containers' | 'images' | 'volumes') {
 		page = p
 	}
 
@@ -74,11 +77,18 @@
 				<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path fill="currentColor" d="M29 12h-9V3h9zm-7-2h5V5h-5z"/><path fill="currentColor" d="M20 15v2h7v10H17V3H5c-1.103 0-2 .898-2 2v22c0 1.103.897 2 2 2h22c1.103 0 2-.897 2-2V15zM6.414 17H15v8.586zM15 15H6.414L15 6.414zM13.586 5L5 13.586V5zM5 18.414L13.586 27H5z"/></svg>
 			</button>
 			<button
-				aria-label="Containers"
+				aria-label="Images"
 				class="p-2 hover:bg-latte-surface2 dark:hover:bg-mocha-surface2 rounded flex items-center gap-2 {page === 'images' ? 'bg-latte-surface2 dark:bg-mocha-surface2' : ''}"
 				onclick={() => handleSetPage('images')}
 			>
-			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path fill="currentColor" d="M4 15v-3H2V2h12v3h2v3h2v10H6v-3zm7-12c-1.1 0-2 .9-2 2h4a2 2 0 0 0-2-2m-7 8V6H3v5zm7-3h4a2 2 0 1 0-4 0m-5 6V9H5v5zm9-1a2 2 0 1 0 .001-3.999A2 2 0 0 0 15 13m2 4v-2c-5 0-5-3-10-3v5z"/></svg>	
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path fill="currentColor" d="M4 15v-3H2V2h12v3h2v3h2v10H6v-3zm7-12c-1.1 0-2 .9-2 2h4a2 2 0 0 0-2-2m-7 8V6H3v5zm7-3h4a2 2 0 1 0-4 0m-5 6V9H5v5zm9-1a2 2 0 1 0 .001-3.999A2 2 0 0 0 15 13m2 4v-2c-5 0-5-3-10-3v5z"/></svg>	
+			</button>
+			<button
+				aria-label="Volumes"
+				class="p-2 hover:bg-latte-surface2 dark:hover:bg-mocha-surface2 rounded flex items-center gap-2 {page === 'images' ? 'bg-latte-surface2 dark:bg-mocha-surface2' : ''}"
+				onclick={() => handleSetPage('volumes')}
+			>
+			<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="m37.876 29.287l-4.627-2.644L37.875 24l4.625 2.643v5.286L24 42.5L5.5 31.929v-5.286L24 16.073l9.25 5.285l-4.625 2.643L24 21.358L5.5 31.929" stroke-width="1"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M42.5 16.071L24 26.642l-4.624-2.643l-4.626 2.643L24 31.928l18.5-10.571zL24 5.5L5.5 16.071v5.286L10.125 24l4.626-2.643l-4.627-2.644" stroke-width="1"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M37.876 18.715L24 10.785L5.5 21.358m37 5.285L24 37.214l-13.876-7.93M24 37.214V42.5m0-15.858v5.286m0-15.855v5.285M24 5.5v5.286" stroke-width="1"/></svg>
 			</button>
 		</div>
 		</nav>
@@ -88,7 +98,11 @@
 				<ContainersList />
 			{:else if page === 'images'}
 				<ImagesList />
+			{:else if page === 'volumes'}
+				<VolumesList />
 			{/if}
 		</content>
 	</div>
 </main>
+
+<Toaster />
