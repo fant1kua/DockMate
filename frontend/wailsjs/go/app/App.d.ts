@@ -18,6 +18,8 @@ export function KillContainer(arg1:string):Promise<void>;
 
 export function ListContainers():Promise<Array<app.ContainerInfo>>;
 
+export function ListContainersByCompose():Promise<Array<app.ComposeProject>>;
+
 export function ListImages():Promise<Array<app.ImageInfo>>;
 
 export function ListVolumes():Promise<Array<app.VolumeInfo>>;

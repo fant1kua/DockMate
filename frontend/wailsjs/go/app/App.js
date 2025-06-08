@@ -34,6 +34,10 @@ export function ListContainers() {
   return window['go']['app']['App']['ListContainers']();
 }
 
+export function ListContainersByCompose() {
+  return window['go']['app']['App']['ListContainersByCompose']();
+}
+
 export function ListImages() {
   return window['go']['app']['App']['ListImages']();
 }
