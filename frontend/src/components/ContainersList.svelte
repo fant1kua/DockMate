@@ -154,40 +154,43 @@
                 </div>
                 
                 <div class="mt-4 flex gap-2">
-                    <button 
-                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                    <button
+                        aria-label="start"
+                        class="text-green-500 hover:text-green-600 px-3 py-1 rounded disabled:opacity-50"
                         onclick={() => handleStartContainer(container.id)}
                         disabled={inAction || container.state === 'running'}
                     >
-                        Start
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M4 0v6h1.7l.2.7l.2.6h.1l1.2-.6l1.8 1.8l-.6 1.2v.1l.6.2l.7.2v.2L16 7zm.5 10.5c-.2 0-.4.1-.5.2c-.3.2-.5.5-.5.8s.2.7.5.8c.1.1.3.2.5.2c.6 0 1-.4 1-1s-.4-1-1-1"/><path fill="currentColor" d="M9 12v-1l-1.1-.4c-.1-.3-.2-.6-.4-.9l.5-1l-.7-.7l-1 .5c-.3-.2-.6-.3-.9-.4L5 7H4l-.4 1.1c-.3.1-.6.2-.9.4l-1-.5l-.7.7l.5 1.1c-.2.3-.3.6-.4.9L0 11v1l1.1.4c.1.3.2.6.4.9l-.5 1l.7.7l1.1-.5c.3.2.6.3.9.4L4 16h1l.4-1.1c.3-.1.6-.2.9-.4l1 .5l.7-.7l-.5-1.1c.2-.3.3-.6.4-.9zm-4.5 1.5c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2"/></svg>
                     </button>
                     <button 
-                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        aria-label="Stop"
+                        class="text-red-500 hover:text-red-600 px-3 py-1 rounded disabled:opacity-50"
                         onclick={() => handleStopContainer(container.id)}
                         disabled={inAction || container.state !== 'running'}
                     >
-                        Stop
-                    </button>
-                    <button 
-                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16"><path fill="currentColor" d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m0 14.5a6.5 6.5 0 1 1 0-13a6.5 6.5 0 0 1 0 13M5 5h6v6H5z"/></svg>                    </button>
+                    <button
+                        aria-label="Restart"
+                        class="text-yellow-500 hover:text-yellow-600 px-3 py-1 rounded disabled:opacity-50"
                         onclick={() => handleRestartContainer(container.id)}
                         disabled={inAction || container.state !== 'running'}
                     >
-                        Restart
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 4c2.1 0 4.1.8 5.6 2.3c3.1 3.1 3.1 8.2 0 11.3c-1.8 1.9-4.3 2.6-6.7 2.3l.5-2c1.7.2 3.5-.4 4.8-1.7c2.3-2.3 2.3-6.1 0-8.5C15.1 6.6 13.5 6 12 6v4.6l-5-5l5-5zM6.3 17.6C3.7 15 3.3 11 5.1 7.9l1.5 1.5c-1.1 2.2-.7 5 1.2 6.8q.75.75 1.8 1.2l-.6 2q-1.5-.6-2.7-1.8"/></svg>
                     </button>
-                    <button 
-                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    <button
+                        aria-label="Kill"
+                        class="text-red-500 hover:text-red-600 px-3 py-1 rounded disabled:opacity-50"
                         onclick={() => handleKillContainer(container.id)}
                         disabled={inAction || container.state !== 'running'}
                     >
-                        Kill
-                    </button>
-                    <button 
-                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 64 64"><path fill="currentColor" d="M62 10.571L53.429 2L32 23.429L10.571 2L2 10.571L23.429 32L2 53.429L10.571 62L32 40.571L53.429 62L62 53.429L40.571 32z"/></svg>                    </button>
+                    <button
+                        aria-label="Remove"
+                        class="text-red-500 hover:text-red-600 px-3 py-1 rounded disabled:opacity-50"
                         onclick={() => handleRemoveContainer(container.id)}
                         disabled={inAction}
                     >
-                        Remove
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M5.75 3V1.5h4.5V3zm-1.5 0V1a1 1 0 0 1 1-1h5.5a1 1 0 0 1 1 1v2h2.5a.75.75 0 0 1 0 1.5h-.365l-.743 9.653A2 2 0 0 1 11.148 16H4.852a2 2 0 0 1-1.994-1.847L2.115 4.5H1.75a.75.75 0 0 1 0-1.5zm-.63 1.5h8.76l-.734 9.538a.5.5 0 0 1-.498.462H4.852a.5.5 0 0 1-.498-.462z" clip-rule="evenodd"/></svg>
                     </button>
                     <button 
                         class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
