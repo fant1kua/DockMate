@@ -10,8 +10,16 @@ export function DeleteImage(arg1) {
   return window['go']['app']['App']['DeleteImage'](arg1);
 }
 
+export function DeleteVolume(arg1) {
+  return window['go']['app']['App']['DeleteVolume'](arg1);
+}
+
 export function GetContainerLogs(arg1) {
   return window['go']['app']['App']['GetContainerLogs'](arg1);
+}
+
+export function KillContainer(arg1) {
+  return window['go']['app']['App']['KillContainer'](arg1);
 }
 
 export function ListContainers() {

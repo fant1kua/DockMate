@@ -1,26 +1,22 @@
 <script lang="ts">
+    import toast from "svelte-5-french-toast";
     import {
         ListVolumes,
+        DeleteVolume,
 	} from "../../wailsjs/go/app/App";
     import type { app } from "../../wailsjs/go/models";
-
+    import CopyBtn from "./CopyBtn.svelte";
+    import { isError } from "../utils";
 
     let volumes = $state<app.VolumeInfo[]>([]);
     let loading = $state<boolean>(false);
 	let error = $state<string | null>(null);
-
-    function formatBytes(bytes: number): string {
-        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        let size = bytes;
-        let unitIndex = 0;
-        while (size >= 1024 && unitIndex < units.length - 1) {
-            size /= 1024;
-            unitIndex++;
-        }
-        return `${size.toFixed(2)} ${units[unitIndex]}`;
-    }
+    let inAction = $state<boolean>(false);
 
     async function loadVolumes() {
+        if (inAction) {
+            return;
+        }
 		loading = true;
 		error = null;
 		try {
@@ -32,7 +28,24 @@
 		}
 	}
 
-    loadVolumes();
+    async function handleDeleteVolume(name:string) {
+        try {
+            inAction = true
+			await DeleteVolume(name);
+            toast.success('Image delete');
+			await loadVolumes();
+		} catch (e) {
+            toast.error(isError(e) ? e.message : 'Failed to delete volume');
+		} finally {
+            inAction = false
+        }
+    }
+
+    $effect(() => {
+        loadVolumes();
+        const interval = setInterval(loadVolumes, 3000);
+        return () => clearInterval(interval);
+    });
 </script>
 
 <button 
@@ -54,10 +67,22 @@
             <div class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded">
                 <div class="grid grid-cols-2 gap-2">
                     <div class="font-bold">Name:</div>
-                    <div>{volume.name}</div>
+                    <div class="flex items-center gap-2">
+                        <span class="truncate max-w-[200px]">{volume.name}</span>
+                        <CopyBtn value={volume.name} />
+                    </div>
 
                     <div class="font-bold">Created at:</div>
                     <div>{volume.createdAt}</div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button 
+                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        onclick={() => handleDeleteVolume(volume.name)}
+                        disabled={inAction}
+                    >
+                        Delete
+                    </button>
                 </div>
             </div>
         {/each}

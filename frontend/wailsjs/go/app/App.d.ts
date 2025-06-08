@@ -6,7 +6,11 @@ export function ContainerInspect(arg1:string):Promise<string>;
 
 export function DeleteImage(arg1:string):Promise<void>;
 
+export function DeleteVolume(arg1:string):Promise<void>;
+
 export function GetContainerLogs(arg1:string):Promise<string>;
+
+export function KillContainer(arg1:string):Promise<void>;
 
 export function ListContainers():Promise<Array<app.ContainerInfo>>;
 

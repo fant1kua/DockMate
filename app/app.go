@@ -127,6 +127,13 @@ func (a *App) RemoveContainer(containerID string) error {
 	return a.cli.ContainerRemove(a.ctx, containerID, container.RemoveOptions{})
 }
 
+func (a *App) KillContainer(containerID string) error {
+	if a.cli == nil {
+		return fmt.Errorf("Docker client not initialized")
+	}
+	return a.cli.ContainerKill(a.ctx, containerID, "SIGTER")
+}
+
 func (a *App) ContainerInspect(containerID string) (string, error) {
 	if a.cli == nil {
 		return "", fmt.Errorf("Docker client not initialized")
@@ -263,4 +270,12 @@ func (a *App) ListVolumes() ([]VolumeInfo, error) {
 	}
 
 	return volumeInfos, nil
+}
+
+func (a *App) DeleteVolume(id string) error {
+	if a.cli == nil {
+		return fmt.Errorf("Docker client not initialized")
+	}
+	err := a.cli.VolumeRemove(a.ctx, id, true)
+	return err
 }

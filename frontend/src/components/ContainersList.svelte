@@ -7,6 +7,7 @@
 		StopContainer,
 		RestartContainer,
 		RemoveContainer,
+        KillContainer,
 	} from "../../wailsjs/go/app/App";
     import type { app } from "../../wailsjs/go/models";
     import ConteinerInspect from "./ConteinerInspect.svelte";
@@ -77,6 +78,19 @@
 		try {
             inAction = true
 			await RestartContainer(id);
+            toast.success('Container restarted');
+			await loadContainers();
+		} catch (e) {
+            toast.error(isError(e) ? e.message : 'Failed to restart container');
+		} finally {
+            inAction = false
+        }
+	}
+
+    async function handleKillContainer(id: string) {
+		try {
+            inAction = true
+			await KillContainer(id);
             toast.success('Container restarted');
 			await loadContainers();
 		} catch (e) {
@@ -160,6 +174,13 @@
                         disabled={inAction || container.state !== 'running'}
                     >
                         Restart
+                    </button>
+                    <button 
+                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        onclick={() => handleStopContainer(container.id)}
+                        disabled={inAction || container.state !== 'running'}
+                    >
+                        Kill
                     </button>
                     <button 
                         class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
