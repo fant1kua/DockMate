@@ -40,7 +40,7 @@
 		class="w-full bg-latte-surface0 dark:bg-mocha-surface0 cursor-grabbing"
 		style="--wails-draggable:drag"
 	>
-		<div class="w-full grid grid-cols-3">
+		<div class="w-full grid grid-cols-3 select-none">
 			<div></div>
 			<div class="text-center py-1">{title}</div>
 			<div class="text-right">
