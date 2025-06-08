@@ -91,10 +91,10 @@
 		try {
             inAction = true
 			await KillContainer(id);
-            toast.success('Container restarted');
+            toast.success('Container killed');
 			await loadContainers();
 		} catch (e) {
-            toast.error(isError(e) ? e.message : 'Failed to restart container');
+            toast.error(isError(e) ? e.message : 'Failed to kill container');
 		} finally {
             inAction = false
         }
@@ -177,7 +177,7 @@
                     </button>
                     <button 
                         class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                        onclick={() => handleStopContainer(container.id)}
+                        onclick={() => handleKillContainer(container.id)}
                         disabled={inAction || container.state !== 'running'}
                     >
                         Kill

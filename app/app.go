@@ -131,7 +131,7 @@ func (a *App) KillContainer(containerID string) error {
 	if a.cli == nil {
 		return fmt.Errorf("Docker client not initialized")
 	}
-	return a.cli.ContainerKill(a.ctx, containerID, "SIGTER")
+	return a.cli.ContainerKill(a.ctx, containerID, "SIGKILL")
 }
 
 func (a *App) ContainerInspect(containerID string) (string, error) {
