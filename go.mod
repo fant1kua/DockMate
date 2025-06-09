@@ -62,5 +62,3 @@ require (
 	golang.org/x/tools v0.30.0 // indirect
 	gotest.tools/v3 v3.5.2 // indirect
 )
-
-// replace github.com/wailsapp/wails/v2 v2.9.2 => /home/sascha/go/pkg/mod

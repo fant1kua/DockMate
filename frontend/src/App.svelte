@@ -5,7 +5,7 @@
 		MinimiseApp,
 	} from "../wailsjs/go/app/App";
 
-    import ContainersList from "./components/ContainersListOld.svelte";
+    import ContainersList from "./components/ContainersList.svelte";
     import ImagesList from "./components/ImagesList.svelte";
     import VolumesList from "./components/VolumesList.svelte";
 

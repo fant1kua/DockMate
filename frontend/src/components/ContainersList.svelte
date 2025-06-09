@@ -14,6 +14,7 @@
     import ConteinerLogs from "./ConteinerLogs.svelte";
     import ConteinerInspect from "./ConteinerInspect.svelte";
     import ContainerTerminal from "./ContainerTerminal.svelte";
+    import { EventsOff, EventsOn } from "../../wailsjs/runtime/runtime";
 
     type IAction = 'logs' | 'inspect' | 'terminal'
 
@@ -113,8 +114,18 @@
 
     $effect(() => {
         loadContainers();
-        const interval = setInterval(loadContainers, 3000);
-        return () => clearInterval(interval);
+        // const interval = setInterval(loadContainers, 3000);
+        // return () => clearInterval(interval);
+    });
+
+    $effect(() => {
+        EventsOn("containersUpdated", (p: app.ComposeProject[]) => {
+          projects = p
+        });
+
+        return () => {
+            EventsOff('containersUpdated');
+        }
     });
 </script>
 
@@ -131,8 +142,8 @@
         <div class="text-center text-gray-500">No containers found</div>
     {:else}
         {#each projects as project}
-            <div class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded">
-                <h2 class="text-xl font-bold mb-4">{project.name}</h2>
+            <details class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded" open>
+                <summary class="text-xl font-bold mb-1">{project.name}</summary>
                 {#if !project.containers || project.containers.length === 0}
                     <div class="text-center text-gray-500">No containers in this project</div>
                 {:else}
@@ -226,7 +237,7 @@
                         </div>
                     {/each}
                 {/if}
-            </div>
+            </details>
         {/each}
     {/if}
 </div>

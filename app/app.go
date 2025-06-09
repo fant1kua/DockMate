@@ -35,6 +35,54 @@ func Startup(a *App, ctx context.Context) {
 		return
 	}
 	a.cli = cli
+
+	ticker := time.NewTicker(5 * time.Second)
+	for {
+			<-ticker.C
+			containers, err := cli.ContainerList(a.ctx, container.ListOptions{All: true})
+			if err == nil {
+				// Map to store containers by project
+				projectMap := make(map[string][]ContainerInfo)
+				standaloneContainers := []ContainerInfo{}
+
+				for _, container := range containers {
+					containerInfo := ContainerInfo{
+						ID:     container.ID[:12],
+						Names:  container.Names,
+						Image:  container.Image,
+						Status: container.Status,
+						State:  container.State,
+					}
+
+					// Check for compose project label
+					projectName := container.Labels["com.docker.compose.project"]
+					if projectName != "" {
+						projectMap[projectName] = append(projectMap[projectName], containerInfo)
+					} else {
+						standaloneContainers = append(standaloneContainers, containerInfo)
+					}
+				}
+
+				// Convert map to slice of ComposeProject
+				var projects []ComposeProject
+				for name, containers := range projectMap {
+					projects = append(projects, ComposeProject{
+						Name:       name,
+						Containers: containers,
+					})
+				}
+
+				// Add standalone containers as a special project
+				if len(standaloneContainers) > 0 {
+					projects = append(projects, ComposeProject{
+						Name:       "Standalone",
+						Containers: standaloneContainers,
+					})
+				}
+				runtime.EventsEmit(a.ctx, "containersUpdated", projects)
+			}
+			
+	}
 }
 
 func (a *App) QuitApp() {
