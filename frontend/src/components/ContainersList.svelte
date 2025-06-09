@@ -10,6 +10,7 @@
         Restart,
         Remove,
         Kill,
+        Exec,
     } from '@app/app/DockerContainersService';
     import type { app } from "@app/models";
     import { EventsOff, EventsOn } from "@runtime/runtime";
@@ -55,7 +56,7 @@
     async function handleStopContainer(id: string) {
         try {
             inAction = true;
-            await Stop(id);
+            await Exec(id);
             toast.success('Container stopped');
         } catch (e) {
             toast.error(isError(e) ? e.message : 'Failed to stop container');
@@ -118,6 +119,10 @@
           list = l
         });
         StartWatching();
+
+        EventsOn('docker:output', (s: string) => {
+            console.log(s)
+        })
 
         return () => {
             StopWatching();

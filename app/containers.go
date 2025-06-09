@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"sync"
@@ -207,4 +208,40 @@ func (s *DockerContainersService) Inspect(id string) (string, error) {
 	}
 
 	return string(raw), nil
+}
+
+func (s *DockerContainersService) Exec(id string) error {
+	execConfig := container.ExecOptions{
+		Cmd:          []string{"/bin/bash", "-c", "\"ping google.com\""},
+		AttachStdout: true,
+		AttachStderr: true,
+		Tty:          false,
+	}
+
+	execResp, err := s.cli.ContainerExecCreate(s.ctx, id, execConfig)
+	if err != nil {
+		return fmt.Errorf("Exec create error: %w", err)
+	}
+
+	attachResp, err := s.cli.ContainerExecAttach(s.ctx, execResp.ID, container.ExecAttachOptions{
+		Tty: execConfig.Tty,
+	})
+	if err != nil {
+		return fmt.Errorf("Attach error: %w", err)
+	}
+
+	go func() {
+		defer attachResp.Close() // Close AFTER done reading
+
+		scanner := bufio.NewScanner(attachResp.Reader)
+		for scanner.Scan() {
+			line := scanner.Text()
+			runtime.EventsEmit(s.ctx, "docker:output", line)
+		}
+		if err := scanner.Err(); err != nil {
+			runtime.EventsEmit(s.ctx, "docker:output", fmt.Sprintf("Scanner error: %v", err))
+		}
+	}()
+
+	return nil
 }
