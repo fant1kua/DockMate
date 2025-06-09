@@ -15,7 +15,7 @@
     import { EventsOff, EventsOn } from "@runtime/runtime";
     import CopyBtn from "./CopyBtn.svelte";
     import ConteinerLogs from "./ConteinerLogs.svelte";
-    import ConteinerInspect from "./ConteinerInspect.svelte";
+    import Inspect from "./Inspect.svelte";
     import ContainerTerminal from "./ContainerTerminal.svelte";
 
     type IAction = 'logs' | 'inspect' | 'terminal'
@@ -138,45 +138,45 @@
     {#if !list || list.length === 0}
         <div class="text-center text-gray-500">No containers found</div>
     {:else}
-        {#each list as project}
+        {#each list as group}
             <details class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded" open>
-                <summary class="text-xl font-bold mb-1">{project.name}</summary>
-                {#if !project.containers || project.containers.length === 0}
+                <summary class="text-xl font-bold mb-1">{group.name}</summary>
+                {#if !group.containers || group.containers.length === 0}
                     <div class="text-center text-gray-500">No containers in this project</div>
                 {:else}
-                    {#each project.containers as container}
+                    {#each group.containers as item}
                         <div class="bg-latte-surface2 dark:bg-mocha-surface2 p-4 rounded mb-2">
                             <div class="grid grid-cols-2 gap-2">
                                 <div class="font-bold">ID:</div>
                                 <div class="flex items-center gap-2">
-                                    <span class="truncate max-w-[200px]">{container.id}</span>
-                                    <CopyBtn value={container.id} />
+                                    <span class="truncate max-w-[200px]">{item.id}</span>
+                                    <CopyBtn value={item.id} />
                                 </div>
 
                                 <div class="font-bold">Names:</div>
-                                <div>{container.names.join(', ')}</div>
+                                <div>{item.names.join(', ')}</div>
 
                                 <div class="font-bold">Image:</div>
                                 <div class="flex items-center gap-2">
-                                    <span class="truncate max-w-[200px]">{container.image}</span>
-                                    <CopyBtn value={container.id} />
+                                    <span class="truncate max-w-[200px]">{item.image}</span>
+                                    <CopyBtn value={item.id} />
                                 </div>
 
                                 <div class="font-bold">Status:</div>
                                 <div class="flex items-center gap-2">
                                     <span class={`inline-block w-2 h-2 rounded-full ${
-                                        container.state === 'running' ? 'bg-green-500' : 'bg-red-500'
+                                        item.state === 'running' ? 'bg-green-500' : 'bg-red-500'
                                     }`}></span>
-                                    {container.status}
+                                    {item.status}
                                 </div>
                             </div>
 
                             <div class="mt-4 flex gap-2">
-                                {#if container.state !== 'running'}
+                                {#if item.state !== 'running'}
                                     <button
                                         aria-label="Start"
                                         class="text-green-500 hover:text-green-600 px-3 py-1 rounded disabled:opacity-50"
-                                        onclick={() => handleStartContainer(container.id)}
+                                        onclick={() => handleStartContainer(item.id)}
                                         disabled={inAction}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
@@ -185,7 +185,7 @@
                                     <button
                                         aria-label="Stop"
                                         class="text-yellow-500 hover:text-yellow-600 px-3 py-1 rounded disabled:opacity-50"
-                                        onclick={() => handleStopContainer(container.id)}
+                                        onclick={() => handleStopContainer(item.id)}
                                         disabled={inAction}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6 6h12v12H6z"/></svg>
@@ -193,34 +193,34 @@
                                     <button
                                         aria-label="Restart"
                                         class="text-blue-500 hover:text-blue-600 px-3 py-1 rounded disabled:opacity-50"
-                                        onclick={() => handleRestartContainer(container.id)}
+                                        onclick={() => handleRestartContainer(item.id)}
                                         disabled={inAction}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
                                     </button>
                                     <button 
                                         class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded"
-                                        onclick={() => handleAction(container, 'terminal')}
+                                        onclick={() => handleAction(item, 'terminal')}
                                     >
                                         Terminal
                                     </button>
                                 {/if}
                                 <button 
                                     class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-                                    onclick={() => handleAction(container, 'logs')}
+                                    onclick={() => handleAction(item, 'logs')}
                                 >
                                     View Logs
                                 </button>
                                 <button 
                                     class="bg-green-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                                    onclick={() => handleAction(container, 'inspect')}
+                                    onclick={() => handleAction(item, 'inspect')}
                                 >
                                     Inspect
                                 </button>
                                 <button
                                     aria-label="Kill"
                                     class="text-orange-500 hover:text-orange-600 px-3 py-1 rounded disabled:opacity-50"
-                                    onclick={() => handleKillContainer(container.id)}
+                                    onclick={() => handleKillContainer(item.id)}
                                     disabled={inAction}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8s8 3.59 8 8s-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4l8-8z"/></svg>
@@ -228,7 +228,7 @@
                                 <button
                                     aria-label="Remove"
                                     class="text-red-500 hover:text-red-600 px-3 py-1 rounded disabled:opacity-50"
-                                    onclick={() => handleRemoveContainer(container.id)}
+                                    onclick={() => handleRemoveContainer(item.id)}
                                     disabled={inAction}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M5.75 3V1.5h4.5V3zm-1.5 0V1a1 1 0 0 1 1-1h5.5a1 1 0 0 1 1 1v2h2.5a.75.75 0 0 1 0 1.5h-.365l-.743 9.653A2 2 0 0 1 11.148 16H4.852a2 2 0 0 1-1.994-1.847L2.115 4.5H1.75a.75.75 0 0 1 0-1.5zm-.63 1.5h8.76l-.734 9.538a.5.5 0 0 1-.498.462H4.852a.5.5 0 0 1-.498-.462z" clip-rule="evenodd"/></svg>
@@ -242,5 +242,5 @@
     {/if}
 </div>
 <ConteinerLogs  container={action === 'logs' ? container : null} onClose={handleClose} />
-<ConteinerInspect  container={action === 'inspect' ? container : null} onClose={handleClose} />
+<Inspect type="container" id={action === 'inspect' ? container?.id : null} onClose={handleClose} />
 <ContainerTerminal container={action === 'terminal' ? container : null} onClose={handleClose} />

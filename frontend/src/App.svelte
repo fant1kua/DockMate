@@ -10,8 +10,6 @@
     import NetworksList from "./components/NetworksList.svelte";
     import VolumesList from "./components/VolumesList.svelte";
 
-	
-
 	type IPage = 'containers' | 'images' | 'volumes' | 'networks'
 
 	let title = "DockMate";

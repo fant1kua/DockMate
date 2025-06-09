@@ -11,10 +11,15 @@
     import type { app } from "@app/models";
     import { EventsOff, EventsOn } from "@runtime/runtime";
     import CopyBtn from "./CopyBtn.svelte";
+    import Inspect from './Inspect.svelte';
+
+    type IAction = 'inspect'
 
     let list = $state<app.ImageInfo[]>([]);
     let loading = $state<boolean>(false);
     let inAction = $state<boolean>(false);
+    let image = $state<app.ImageInfo | null>(null)
+    let action = $state<IAction>('inspect')
 
     async function load() {
         if (inAction) {
@@ -54,6 +59,16 @@
         }
     }
 
+    function handleAction(c: app.ImageInfo, act: IAction) {
+        image = c
+        action = act
+    }
+
+    function handleClose() {
+		image = null
+	}
+
+
     $effect(() => {
         load();
     });
@@ -82,30 +97,30 @@
     {#if !list || list.length === 0}
         <div class="text-center text-gray-500">No images found</div>
     {:else}
-        {#each list as image}
+        {#each list as item}
             <div class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded">
                 <div class="grid grid-cols-2 gap-2">
                     <div class="font-bold">ID:</div>
                     <div class="flex items-center gap-2">
-                        <span class="truncate max-w-[200px]">{image.id}</span>
-                        <CopyBtn value={image.id} />
+                        <span class="truncate max-w-[200px]">{item.id}</span>
+                        <CopyBtn value={item.id} />
                     </div>
 
                     <div class="font-bold">Tags:</div>
-                    <div>{image.tags.join(',')}</div>
+                    <div>{item.tags.join(',')}</div>
 
                     <div class="font-bold">Size:</div>
-                    <div>{formatBytes(image.size)} ({image.size} bytes)</div>
+                    <div>{formatBytes(item.size)} ({item.size} bytes)</div>
 
                     <div class="font-bold">Created at:</div>
-                    <div>{image.createdAt}</div>
+                    <div>{item.createdAt}</div>
                 </div>
 
                 <div class="mt-4 flex gap-2">
                     <button
                         aria-label="Start Container"
                         class="text-green-500 hover:text-green-600 px-3 py-1 rounded disabled:opacity-50"
-                        onclick={() => handleStartContainer(image.id)}
+                        onclick={() => handleStartContainer(item.id)}
                         disabled={inAction}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
@@ -113,13 +128,21 @@
                     <button
                         aria-label="Remove"
                         class="text-red-500 hover:text-red-600 px-3 py-1 rounded disabled:opacity-50"
-                        onclick={() => handleDeleteImage(image.id)}
+                        onclick={() => handleDeleteImage(item.id)}
                         disabled={inAction}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M5.75 3V1.5h4.5V3zm-1.5 0V1a1 1 0 0 1 1-1h5.5a1 1 0 0 1 1 1v2h2.5a.75.75 0 0 1 0 1.5h-.365l-.743 9.653A2 2 0 0 1 11.148 16H4.852a2 2 0 0 1-1.994-1.847L2.115 4.5H1.75a.75.75 0 0 1 0-1.5zm-.63 1.5h8.76l-.734 9.538a.5.5 0 0 1-.498.462H4.852a.5.5 0 0 1-.498-.462z" clip-rule="evenodd"/></svg>
+                    </button>
+
+                    <button 
+                        class="bg-green-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        onclick={() => handleAction(item, 'inspect')}
+                    >
+                        Inspect
                     </button>
                 </div>
             </div>
         {/each}
     {/if}
 </div>
+<Inspect type="image" id={action === 'inspect' ? image?.id : null} onClose={handleClose} />

@@ -141,6 +141,18 @@ func (s *DockerImagesService) Remove(id string) error {
 	return err
 }
 
+func (s *DockerImagesService) Inspect(id string) (string, error) {
+	if s.cli == nil || s.ctx == nil {
+		return "{}", fmt.Errorf("Docker client not initialized")
+	}
+	_, raw, err := s.cli.ImageInspectWithRaw(s.ctx, id)
+	if err != nil {
+		return "", fmt.Errorf("failed to get image data: %v", err)
+	}
+
+	return string(raw), nil
+}
+
 func (s *DockerImagesService) CreateAndStart(id string) error {
 	if s.cli == nil || s.ctx == nil {
 		return fmt.Errorf("Docker client not initialized")

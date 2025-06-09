@@ -10,11 +10,16 @@
     import type { app } from "@app/models";
     import { EventsOff, EventsOn } from "@runtime/runtime";
     import CopyBtn from "./CopyBtn.svelte";
+    import Inspect from './Inspect.svelte';
+
+    type IAction = 'inspect'
 
     let list = $state<app.VolumeInfo[]>([]);
     let loading = $state<boolean>(false);
 	let error = $state<string | null>(null);
     let inAction = $state<boolean>(false);
+    let volume = $state<app.VolumeInfo | null>(null)
+    let action = $state<IAction>('inspect')
 
     async function load() {
         if (inAction) {
@@ -41,6 +46,16 @@
             inAction = false
         }
     }
+
+    function handleAction(c: app.VolumeInfo, act: IAction) {
+        volume = c
+        action = act
+    }
+
+    function handleClose() {
+		volume = null
+	}
+
 
     $effect(() => {
         load();
@@ -74,29 +89,37 @@
     {#if !list || list.length === 0}
         <div class="text-center text-gray-500">No volumes found</div>
     {:else}
-        {#each list as volume}
+        {#each list as item}
             <div class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded">
                 <div class="grid grid-cols-2 gap-2">
                     <div class="font-bold">Name:</div>
                     <div class="flex items-center gap-2">
-                        <span class="truncate max-w-[200px]">{volume.name}</span>
-                        <CopyBtn value={volume.name} />
+                        <span class="truncate max-w-[200px]">{item.name}</span>
+                        <CopyBtn value={item.name} />
                     </div>
 
                     <div class="font-bold">Created at:</div>
-                    <div>{volume.createdAt}</div>
+                    <div>{item.createdAt}</div>
                 </div>
                 <div class="mt-4 flex gap-2">
                     <button
                         aria-label="Remove"
                         class="text-red-500 hover:text-red-600 px-3 py-1 rounded disabled:opacity-50"
-                        onclick={() => handleDeleteVolume(volume.name)}
+                        onclick={() => handleDeleteVolume(item.name)}
                         disabled={inAction}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M5.75 3V1.5h4.5V3zm-1.5 0V1a1 1 0 0 1 1-1h5.5a1 1 0 0 1 1 1v2h2.5a.75.75 0 0 1 0 1.5h-.365l-.743 9.653A2 2 0 0 1 11.148 16H4.852a2 2 0 0 1-1.994-1.847L2.115 4.5H1.75a.75.75 0 0 1 0-1.5zm-.63 1.5h8.76l-.734 9.538a.5.5 0 0 1-.498.462H4.852a.5.5 0 0 1-.498-.462z" clip-rule="evenodd"/></svg>
+                    </button>
+
+                    <button 
+                        class="bg-green-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        onclick={() => handleAction(item, 'inspect')}
+                    >
+                        Inspect
                     </button>
                 </div>
             </div>
         {/each}
     {/if}
 </div>
+<Inspect type="volume" id={action === 'inspect' ? volume?.name : null} onClose={handleClose} />

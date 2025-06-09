@@ -6,6 +6,10 @@ export function CreateAndStart(arg1) {
   return window['go']['app']['DockerImagesService']['CreateAndStart'](arg1);
 }
 
+export function Inspect(arg1) {
+  return window['go']['app']['DockerImagesService']['Inspect'](arg1);
+}
+
 export function List() {
   return window['go']['app']['DockerImagesService']['List']();
 }

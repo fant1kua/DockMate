@@ -4,6 +4,8 @@ import {app} from '../models';
 
 export function CreateAndStart(arg1:string):Promise<void>;
 
+export function Inspect(arg1:string):Promise<string>;
+
 export function List():Promise<Array<app.ImageInfo>>;
 
 export function Remove(arg1:string):Promise<void>;

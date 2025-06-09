@@ -133,3 +133,15 @@ func (s *DockerVolumesService) Remove(id string) error {
 	err := s.cli.VolumeRemove(s.ctx, id, true)
 	return err
 }
+
+func (s *DockerVolumesService) Inspect(id string) (string, error) {
+	if s.cli == nil || s.ctx == nil {
+		return "{}", fmt.Errorf("Docker client not initialized")
+	}
+	_, raw, err := s.cli.VolumeInspectWithRaw(s.ctx, id)
+	if err != nil {
+		return "", fmt.Errorf("failed to get volume data: %v", err)
+	}
+
+	return string(raw), nil
+}
