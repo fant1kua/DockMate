@@ -21,15 +21,17 @@ var dockerImagesService *app.DockerImagesService
 var dockerVolumesService *app.DockerVolumesService
 var dockerNetworksService *app.DockerNetworksService
 var dockerLogsService *app.DockerLogsService
+var dockerTerminalService *app.DockerContainersTerminal
 
 func main() {
 	// Create an instance of the app structure
 	appobj = app.NewApp()
-	dockerContainersService = app.NewDockerCOntainersService()
+	dockerContainersService = app.NewDockerContainersService()
 	dockerImagesService = app.NewDockerImagesService()
 	dockerVolumesService = app.NewDockerVolumesService()
 	dockerNetworksService = app.NewDockerNetworksService()
 	dockerLogsService = app.NewDockerLogsService()
+	dockerTerminalService = app.NewDockerTerminalService()
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -51,6 +53,7 @@ func main() {
 			dockerVolumesService,
 			dockerNetworksService,
 			dockerLogsService,
+			dockerTerminalService,
 		},
 	})
 
@@ -69,6 +72,7 @@ func startup(ctx context.Context) {
 	app.StartupDockerContainersService(dockerContainersService, ctx, cli)
 	app.StartupDockerImagesService(dockerImagesService, ctx, cli)
 	app.StartupDockerVolumesService(dockerVolumesService, ctx, cli)
-	app.StartupDockerLogsService(dockerLogsService, ctx, cli)
 	app.StartupDockerNetworksService(dockerNetworksService, ctx, cli)
+	app.StartupDockerLogsService(dockerLogsService, ctx, cli)
+	app.StartupDockerTerminalService(dockerTerminalService, ctx, cli)
 }

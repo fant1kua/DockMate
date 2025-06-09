@@ -2,13 +2,12 @@
     import { Terminal } from 'xterm';
     import { FitAddon } from 'xterm-addon-fit';
     import { WebLinksAddon } from 'xterm-addon-web-links';
-    import { WebglAddon } from 'xterm-addon-webgl';
     import {
-        StartWatching,
-        StopWatching,
-    } from "@app/app/DockerLogsService";
+        StartInteractiveTerminal,
+        SendToTerminal,
+        CloseTerminal,
+    } from "@app/app/DockerContainersTerminal";
     import type { app } from "@app/models";
-    import { ExecContainer } from "../../wailsjs/go/app/App";
     import { EventsOff, EventsOn } from "../../wailsjs/runtime/runtime";
 
     let { container, onClose } = $props<{
@@ -20,7 +19,7 @@
     let terminal: Terminal;
 
     $effect(() => {
-        if (!terminalElement) return;
+        if (!terminalElement || !container) return;
 
         terminal = new Terminal({
             cursorBlink: true,
@@ -35,59 +34,87 @@
         // Initialize addons
         const fitAddon = new FitAddon();
         const webLinksAddon = new WebLinksAddon();
-        const webglAddon = new WebglAddon();
 
         // Add addons to terminal
         terminal.loadAddon(fitAddon);
         terminal.loadAddon(webLinksAddon);
-        terminal.loadAddon(webglAddon);
 
         // Open terminal in the container
         terminal.open(terminalElement);
         fitAddon.fit();
 
         terminal.open(terminalElement);
+        
+        
 
-        if (container) {
-            StartWatching(container.id);
-            EventsOn("docker:logs", (line: string) => {
-                terminal.writeln(line);
-            });
+        StartInteractiveTerminal(container.id, "111");
 
-            let currentCommand = ''
+        let currentCommand = ''
 
-            terminal.onData((data) => {
-                if (data === '\r') {
-                    // Enter key pressed
-                    terminal.write('\r\n');
-                    if (currentCommand.trim()) {
-                        console.log(currentCommand)
-                        ExecContainer(container.id, currentCommand).catch((error) => {
-                            terminal.writeln(`Error executing command: ${error}`);
-                        });
-                    }
-                    currentCommand = '';
-                } else if (data === '\u0003') {
-                    // Ctrl+C
-                    terminal.write('^C\r\n');
-                    currentCommand = '';
-                } else if (data === '\u007F') {
-                    // Backspace
-                    if (currentCommand.length > 0) {
-                        currentCommand = currentCommand.slice(0, -1);
-                        terminal.write('\b \b');
-                    }
-                } else {
-                    // Regular character
-                    currentCommand += data;
-                    terminal.write(data);
+        terminal.onKey((e) => {
+            const char = e.key;
+            const ev = e.domEvent;
+            console.log(ev)
+
+            if (ev.key === "Enter") {
+                terminal.write('\r\n');
+                if (currentCommand.trim()) {
+                    console.log(currentCommand)
+                    SendToTerminal("111", `${currentCommand}\n`).catch((error) => {
+                        terminal.writeln(`Error executing command: ${error}`);
+                    });
+                    currentCommand = ''
                 }
-            });
-        }
+            } else if (ev.key === "Backspace") {
+                // Do not delete prompt
+                if (currentCommand !== '') {
+                    terminal.write('\b \b');
+                    currentCommand = currentCommand.slice(0, -1);
+                }
+            } else if (ev.ctrlKey && ev.key === 'c') {
+                terminal.write('^C\r\n');
+                currentCommand = '';
+            } else {
+                currentCommand += char;
+                terminal.write(char);
+            }
+        });
+        // terminal.onData((data) => {
+        //     if (data === '\r') {
+        //         // Enter key pressed
+        //         terminal.write('\r\n');
+        //         if (currentCommand.trim()) {
+        //             console.log(currentCommand)
+        //             SendToTerminal("111", `${currentCommand}\n`).catch((error) => {
+        //                 terminal.writeln(`Error executing command: ${error}`);
+        //             });
+        //         }
+        //         currentCommand = '';
+        //     } else if (data === '\u0003') {
+        //         // Ctrl+C
+        //         terminal.write('^C\r\n');
+        //         currentCommand = '';
+        //     } else if (data === '\u007F') {
+        //         // Backspace
+        //         if (currentCommand.length > 0) {
+        //             currentCommand = currentCommand.slice(0, -1);
+        //             terminal.write('\b \b');
+        //         }
+        //     } else {
+        //         // Regular character
+        //         currentCommand += data;
+        //         terminal.write(data);
+        //     }
+        // });
+
+        EventsOn("docker:output", (line: string) => {
+            console.info('output', line)
+            terminal.writeln(line);
+        });
 
         return () => {
-            EventsOff('docker:logs');
-            StopWatching();
+            EventsOff('docker:output');
+            CloseTerminal("111");
             terminal.dispose();
         }
     });
