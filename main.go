@@ -4,7 +4,9 @@ import (
 	"context"
 	"dockmate/app"
 	"embed"
+	"fmt"
 
+	"github.com/docker/docker/client"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -14,10 +16,12 @@ import (
 var assets embed.FS
 
 var appobj *app.App
+var dockerService *app.DockerService
 
 func main() {
 	// Create an instance of the app structure
 	appobj = app.NewApp()
+	dockerService = app.NewDockerService()
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -32,6 +36,7 @@ func main() {
 		Frameless:        true,
 		Bind: []interface{}{
 			appobj,
+			dockerService,
 		},
 	})
 
@@ -41,5 +46,11 @@ func main() {
 }
 
 func startup(ctx context.Context) {
-	app.Startup(appobj, ctx)
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		fmt.Printf("Error creating Docker client: %v\n", err)
+		return
+	}
+	app.Startup(appobj, ctx, cli)
+	app.StartupDockerService(dockerService, ctx, cli)
 }

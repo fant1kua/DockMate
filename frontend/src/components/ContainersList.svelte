@@ -2,12 +2,14 @@
     import { isError } from "../utils";
     import {
         ListContainersByCompose,
+    } from "../../wailsjs/go/app/App";
+    import {
         StartContainer,
         StopContainer,
         RestartContainer,
         RemoveContainer,
         KillContainer,
-    } from "../../wailsjs/go/app/App";
+    } from '@app/DockerService'
     import type { app } from "../../wailsjs/go/models";
     import toast from 'svelte-5-french-toast';
     import CopyBtn from "./CopyBtn.svelte";

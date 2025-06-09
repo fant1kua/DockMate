@@ -26,14 +26,8 @@ func NewApp() *App {
 	return &App{}
 }
 
-func Startup(a *App, ctx context.Context) {
-	fmt.Println("App Startup")
+func Startup(a *App, ctx context.Context, cli *client.Client) {
 	a.ctx = ctx
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		fmt.Printf("Error creating Docker client: %v\n", err)
-		return
-	}
 	a.cli = cli
 
 	ticker := time.NewTicker(5 * time.Second)
@@ -150,53 +144,6 @@ func (a *App) ListContainers() ([]ContainerInfo, error) {
 	}
 
 	return containerInfos, nil
-}
-
-func (a *App) StartContainer(containerID string) error {
-	if a.cli == nil {
-		return fmt.Errorf("Docker client not initialized")
-	}
-	return a.cli.ContainerStart(a.ctx, containerID, container.StartOptions{})
-}
-
-func (a *App) StopContainer(containerID string) error {
-	if a.cli == nil {
-		return fmt.Errorf("Docker client not initialized")
-	}
-	return a.cli.ContainerStop(a.ctx, containerID, container.StopOptions{})
-}
-
-func (a *App) RestartContainer(containerID string) error {
-	if a.cli == nil {
-		return fmt.Errorf("Docker client not initialized")
-	}
-	return a.cli.ContainerRestart(a.ctx, containerID, container.StopOptions{})
-}
-
-func (a *App) RemoveContainer(containerID string) error {
-	if a.cli == nil {
-		return fmt.Errorf("Docker client not initialized")
-	}
-	return a.cli.ContainerRemove(a.ctx, containerID, container.RemoveOptions{})
-}
-
-func (a *App) KillContainer(containerID string) error {
-	if a.cli == nil {
-		return fmt.Errorf("Docker client not initialized")
-	}
-	return a.cli.ContainerKill(a.ctx, containerID, "SIGKILL")
-}
-
-func (a *App) ContainerInspect(containerID string) (string, error) {
-	if a.cli == nil {
-		return "", fmt.Errorf("Docker client not initialized")
-	}
-	_, raw, err := a.cli.ContainerInspectWithRaw(a.ctx, containerID, false)
-	if err != nil {
-		return "", fmt.Errorf("failed to get container data: %v", err)
-	}
-
-	return string(raw), nil
 }
 
 func (a *App) GetContainerLogs(containerID string) (string, error) {

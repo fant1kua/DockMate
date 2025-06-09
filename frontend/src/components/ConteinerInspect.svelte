@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ContainerInspect } from "../../wailsjs/go/app/App";
+    import { ContainerInspect } from "@app/DockerService";
     import { app } from "../../wailsjs/go/models";
   	import 'xterm/css/xterm.css';
 
