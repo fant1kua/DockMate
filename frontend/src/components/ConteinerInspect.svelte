@@ -1,8 +1,8 @@
 <script lang="ts">
+    import toast from "svelte-5-french-toast";
     import { Inspect } from "@app/app/DockerContainersService";
     import { app } from "@app/models";
-  	import 'xterm/css/xterm.css';
-
+    
     let { container, onClose } = $props<{
         container: app.ContainerInfo | null;
 		onClose(): void;
@@ -16,7 +16,7 @@
             const data = await Inspect(container.id);
             inspectData = JSON.stringify(JSON.parse(data), null, 2);
         } catch (e) {
-            console.error('Failed to inspect container:', e);
+            toast.error('Failed to inspect container:', e);
         }
     }
 

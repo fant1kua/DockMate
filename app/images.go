@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/image"
@@ -138,4 +139,30 @@ func (s *DockerImagesService) Remove(id string) error {
 	}
 	_, err := s.cli.ImageRemove(s.ctx, id, image.RemoveOptions{Force: true})
 	return err
+}
+
+func (s *DockerImagesService) CreateAndStart(id string) error {
+	if s.cli == nil || s.ctx == nil {
+		return fmt.Errorf("Docker client not initialized")
+	}
+	// Create container config
+	config := &container.Config{
+		Image: id,
+		// Cmd:   []string{"/bin/sh"},
+		Tty: false,
+	}
+
+	// Create container
+	resp, err := s.cli.ContainerCreate(s.ctx, config, nil, nil, nil, "")
+	if err != nil {
+		return fmt.Errorf("failed to create container: %v", err)
+	}
+
+	// Start the container
+	err = s.cli.ContainerStart(s.ctx, resp.ID, container.StartOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to start container: %v", err)
+	}
+
+	return nil
 }

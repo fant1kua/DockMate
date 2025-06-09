@@ -90,30 +90,3 @@ func (a *App) ExecContainer(containerID string, command string) error {
 
 	return nil
 }
-
-func (a *App) CreateAndStartContainer(imageID string) error {
-	if a.cli == nil {
-		return fmt.Errorf("Docker client not initialized")
-	}
-
-	// Create container config
-	config := &container.Config{
-		Image: imageID,
-		Cmd:   []string{"/bin/sh"},
-		Tty:   true,
-	}
-
-	// Create container
-	resp, err := a.cli.ContainerCreate(a.ctx, config, nil, nil, nil, "")
-	if err != nil {
-		return fmt.Errorf("failed to create container: %v", err)
-	}
-
-	// Start the container
-	err = a.cli.ContainerStart(a.ctx, resp.ID, container.StartOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to start container: %v", err)
-	}
-
-	return nil
-}

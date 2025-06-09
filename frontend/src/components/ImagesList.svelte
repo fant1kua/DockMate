@@ -2,11 +2,9 @@
     import toast from 'svelte-5-french-toast';
     import { isError, formatBytes } from "../utils";
     import {
-        CreateAndStartContainer,
-    } from '@app/app/App'
-    import {
         List,
         Remove,
+        CreateAndStart,
         StartWatching,
         StopWatching,
 	} from "@app/app/DockerImagesService";
@@ -26,7 +24,7 @@
         try {
             list = await List();
         } catch (e) {
-            toast.error(e instanceof Error ? e.message : 'Failed to load containers');
+            toast.error(e instanceof Error ? e.message : 'Failed to load images');
         } finally {
             loading = false;
         }
@@ -36,7 +34,7 @@
         try {
             inAction = true
 			await Remove(id);
-            toast.success('Image delete');
+            toast.success('Image deleted');
 		} catch (e) {
             toast.error(isError(e) ? e.message : 'Failed to delete image');
 		} finally {
@@ -47,7 +45,7 @@
     async function handleStartContainer(id:string) {
         try {
             inAction = true
-			await CreateAndStartContainer(id);
+			await CreateAndStart(id);
             toast.success('Container started successfully');
 		} catch (e) {
             toast.error(isError(e) ? e.message : 'Failed to start container');

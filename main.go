@@ -19,6 +19,7 @@ var appobj *app.App
 var dockerContainersService *app.DockerContainersService
 var dockerImagesService *app.DockerImagesService
 var dockerVolumesService *app.DockerVolumesService
+var dockerNetworksService *app.DockerNetworksService
 var dockerLogsService *app.DockerLogsService
 
 func main() {
@@ -27,6 +28,7 @@ func main() {
 	dockerContainersService = app.NewDockerCOntainersService()
 	dockerImagesService = app.NewDockerImagesService()
 	dockerVolumesService = app.NewDockerVolumesService()
+	dockerNetworksService = app.NewDockerNetworksService()
 	dockerLogsService = app.NewDockerLogsService()
 
 	// Create application with options
@@ -45,6 +47,7 @@ func main() {
 			dockerContainersService,
 			dockerImagesService,
 			dockerVolumesService,
+			dockerNetworksService,
 			dockerLogsService,
 		},
 	})
@@ -65,4 +68,5 @@ func startup(ctx context.Context) {
 	app.StartupDockerImagesService(dockerImagesService, ctx, cli)
 	app.StartupDockerVolumesService(dockerVolumesService, ctx, cli)
 	app.StartupDockerLogsService(dockerLogsService, ctx, cli)
+	app.StartupDockerNetworksService(dockerNetworksService, ctx, cli)
 }

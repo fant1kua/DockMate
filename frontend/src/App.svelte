@@ -1,18 +1,21 @@
 <script lang="ts">
+	import {Toaster} from 'svelte-5-french-toast';
 	import {
 		QuitApp,
 		MaximiseApp,
 		MinimiseApp,
-	} from "../wailsjs/go/app/App";
-
+	} from "@app/app/App";
     import ContainersList from "./components/ContainersList.svelte";
     import ImagesList from "./components/ImagesList.svelte";
+    import NetworksList from "./components/NetworksList.svelte";
     import VolumesList from "./components/VolumesList.svelte";
 
-	import {Toaster} from 'svelte-5-french-toast';
+	
+
+	type IPage = 'containers' | 'images' | 'volumes' | 'networks'
 
 	let title = "DockMate";
-	let page = $state<'containers' | 'images' | 'volumes'>('containers')
+	let page = $state<IPage>('containers')
 	
 
 	function QuitButton() {
@@ -27,7 +30,7 @@
 		MinimiseApp();
 	}
 
-	function handleSetPage(p: 'containers' | 'images' | 'volumes') {
+	function handleSetPage(p: IPage) {
 		page = p
 	}
 
@@ -85,8 +88,15 @@
 			</button>
 			<button
 				aria-label="Volumes"
-				class="p-2 hover:bg-latte-surface2 dark:hover:bg-mocha-surface2 rounded flex items-center gap-2 {page === 'images' ? 'bg-latte-surface2 dark:bg-mocha-surface2' : ''}"
+				class="p-2 hover:bg-latte-surface2 dark:hover:bg-mocha-surface2 rounded flex items-center gap-2 {page === 'volumes' ? 'bg-latte-surface2 dark:bg-mocha-surface2' : ''}"
 				onclick={() => handleSetPage('volumes')}
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 48 48"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="m37.876 29.287l-4.627-2.644L37.875 24l4.625 2.643v5.286L24 42.5L5.5 31.929v-5.286L24 16.073l9.25 5.285l-4.625 2.643L24 21.358L5.5 31.929" stroke-width="1"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M42.5 16.071L24 26.642l-4.624-2.643l-4.626 2.643L24 31.928l18.5-10.571zL24 5.5L5.5 16.071v5.286L10.125 24l4.626-2.643l-4.627-2.644" stroke-width="1"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M37.876 18.715L24 10.785L5.5 21.358m37 5.285L24 37.214l-13.876-7.93M24 37.214V42.5m0-15.858v5.286m0-15.855v5.285M24 5.5v5.286" stroke-width="1"/></svg>
+			</button>
+			<button
+				aria-label="Networks"
+				class="p-2 hover:bg-latte-surface2 dark:hover:bg-mocha-surface2 rounded flex items-center gap-2 {page === 'networks' ? 'bg-latte-surface2 dark:bg-mocha-surface2' : ''}"
+				onclick={() => handleSetPage('networks')}
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 48 48"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="m37.876 29.287l-4.627-2.644L37.875 24l4.625 2.643v5.286L24 42.5L5.5 31.929v-5.286L24 16.073l9.25 5.285l-4.625 2.643L24 21.358L5.5 31.929" stroke-width="1"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M42.5 16.071L24 26.642l-4.624-2.643l-4.626 2.643L24 31.928l18.5-10.571zL24 5.5L5.5 16.071v5.286L10.125 24l4.626-2.643l-4.627-2.644" stroke-width="1"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M37.876 18.715L24 10.785L5.5 21.358m37 5.285L24 37.214l-13.876-7.93M24 37.214V42.5m0-15.858v5.286m0-15.855v5.285M24 5.5v5.286" stroke-width="1"/></svg>
 			</button>
@@ -100,6 +110,8 @@
 				<ImagesList />
 			{:else if page === 'volumes'}
 				<VolumesList />
+			{:else if page === 'networks'}
+				<NetworksList />
 			{/if}
 		</content>
 	</div>

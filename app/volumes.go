@@ -69,7 +69,7 @@ func (s *DockerVolumesService) StartWatching() error {
 
 	go func() {
 		eventFilter := filters.NewArgs()
-		eventFilter.Add("type", "image")
+		eventFilter.Add("type", "volume")
 		eventsChan, errs := s.cli.Events(ctx, events.ListOptions{
 			Filters: eventFilter,
 		})
@@ -77,7 +77,7 @@ func (s *DockerVolumesService) StartWatching() error {
 		for {
 			select {
 			case event := <-eventsChan:
-				if event.Type == events.ImageEventType {
+				if event.Type == events.VolumeEventType {
 					s.sendListUpdate()
 				}
 			case err := <-errs:
