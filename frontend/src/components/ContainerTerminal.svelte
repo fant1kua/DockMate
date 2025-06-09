@@ -3,7 +3,6 @@
     import { FitAddon } from 'xterm-addon-fit';
     import { WebLinksAddon } from 'xterm-addon-web-links';
     import { WebglAddon } from 'xterm-addon-webgl';
-    import { onMount, onDestroy } from 'svelte';
     import type { app } from "../../wailsjs/go/models";
     import { StreamContainerLogs, StopContainerLogs, ExecContainer } from "../../wailsjs/go/app/App";
     import { EventsOff, EventsOn } from "../../wailsjs/runtime/runtime";

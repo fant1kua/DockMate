@@ -5,11 +5,8 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strings"
-	"time"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -20,6 +17,11 @@ type App struct {
 	cli             *client.Client
 	logStreamCtx    context.Context
 	logStreamCancel context.CancelFunc
+}
+
+type DockerBaseService struct {
+	ctx    context.Context
+	cli    *client.Client
 }
 
 func NewApp() *App {
@@ -44,14 +46,6 @@ func (a *App) MaximiseApp() {
 
 func (a *App) MinimiseApp() {
 	runtime.WindowMinimise(a.ctx)
-}
-
-type ImageInfo struct {
-	ID        string   `json:"id"`
-	Name      string   `json:"name"`
-	Size      int64    `json:"size"`
-	Tags      []string `json:"tags"`
-	CreatedAt string   `json:"createdAt"`
 }
 
 type VolumeInfo struct {
@@ -136,36 +130,6 @@ func (a *App) StopContainerLogs() {
 		a.logStreamCancel()
 		a.logStreamCancel = nil
 	}
-}
-
-func (a *App) ListImages() ([]ImageInfo, error) {
-	if a.cli == nil {
-		return nil, fmt.Errorf("Docker client not initialized")
-	}
-	images, err := a.cli.ImageList(a.ctx, image.ListOptions{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to list images: %v", err)
-	}
-
-	var imageInfos []ImageInfo
-	for _, container := range images {
-		imageInfos = append(imageInfos, ImageInfo{
-			ID:        strings.TrimPrefix(container.ID, "sha256:"),
-			Size:      container.Size,
-			Tags:      container.RepoTags,
-			CreatedAt: time.Unix(container.Created, 0).Format(time.RFC3339),
-		})
-	}
-
-	return imageInfos, nil
-}
-
-func (a *App) DeleteImage(imageID string) error {
-	if a.cli == nil {
-		return fmt.Errorf("Docker client not initialized")
-	}
-	_, err := a.cli.ImageRemove(a.ctx, imageID, image.RemoveOptions{Force: true})
-	return err
 }
 
 func (a *App) ListVolumes() ([]VolumeInfo, error) {

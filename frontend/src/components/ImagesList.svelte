@@ -1,39 +1,43 @@
 <script lang="ts">
     import { isError, formatBytes } from "../utils";
     import {
-        DeleteImage,
-        ListImages,
         CreateAndStartContainer,
-	} from "../../wailsjs/go/app/App";
-    import type { app } from "../../wailsjs/go/models";
+    } from '@app/app/App'
+    import {
+        List,
+        Remove,
+        StartWatching,
+        StopWatching,
+	} from "@app/app/DockerImagesService";
+    import type { app } from "@app/models";
+    import { EventsOff, EventsOn } from "@runtime/runtime";
 
     import toast from 'svelte-5-french-toast';
     import CopyBtn from "./CopyBtn.svelte";
 
-    let images = $state<app.ImageInfo[]>([]);
+    let list = $state<app.ImageInfo[]>([]);
     let loading = $state<boolean>(false);
     let inAction = $state<boolean>(false);
 
-    async function loadImages() {
+    async function load() {
         if (inAction) {
             return;
         }
-		loading = true;
-		try {
-			images = await ListImages() ?? [];
-		} catch (e) {
-			toast.error(e instanceof Error ? e.message : 'Failed to load containers');
-		} finally {
-			loading = false;
-		}
-	}
+        loading = true;
+        try {
+            list = await List();
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : 'Failed to load containers');
+        } finally {
+            loading = false;
+        }
+    }
 
     async function handleDeleteImage(id:string) {
         try {
             inAction = true
-			await DeleteImage(id);
+			await Remove(id);
             toast.success('Image delete');
-			await loadImages();
 		} catch (e) {
             toast.error(isError(e) ? e.message : 'Failed to delete image');
 		} finally {
@@ -54,24 +58,35 @@
     }
 
     $effect(() => {
-        loadImages();
-        const interval = setInterval(loadImages, 3000);
-        return () => clearInterval(interval);
+        load();
+    });
+
+    $effect(() => {
+        EventsOn("docker:images", (l: app.ImageInfo[]) => {
+          list = l
+        });
+
+        StartWatching();
+
+        return () => {
+            EventsOff('docker:images');
+            StopWatching();
+        }
     });
 </script>
 
 <button 
     class="w-full bg-latte-surface2 dark:bg-mocha-surface2 p-2 rounded hover:bg-latte-surface3 dark:hover:bg-mocha-surface3"
-    onclick={() => loadImages()}
+    onclick={() => load()}
     disabled={loading || inAction}
 >
     {loading ? 'Loading...' : 'Refresh Images'}
 </button>
 <div class="grid gap-4">
-    {#if !images || images.length === 0}
+    {#if !list || list.length === 0}
         <div class="text-center text-gray-500">No images found</div>
     {:else}
-        {#each images as image}
+        {#each list as image}
             <div class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded">
                 <div class="grid grid-cols-2 gap-2">
                     <div class="font-bold">ID:</div>

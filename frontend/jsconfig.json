@@ -28,7 +28,8 @@
 
     "paths": {
       "@/*": ["src/*"],
-      "@app/*": ["wailsjs/go/app/*"],
+      "@app/*": ["wailsjs/go/*"],
+      "@runtime/*": ["wailsjs/runtime/*"],
       "@components/*": ["src/components/*"],
     }
   },

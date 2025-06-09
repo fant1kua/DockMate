@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { ContainerInspect } from "@app/DockerService";
-    import { app } from "../../wailsjs/go/models";
+    import { Inspect } from "@app/app/DockerContainersService";
+    import { app } from "@app/models";
   	import 'xterm/css/xterm.css';
 
     let { container, onClose } = $props<{
@@ -13,7 +13,7 @@
     async function loadInspectData() {
         if (!container) return;
         try {
-            const data = await ContainerInspect(container.id);
+            const data = await Inspect(container.id);
             inspectData = JSON.stringify(JSON.parse(data), null, 2);
         } catch (e) {
             console.error('Failed to inspect container:', e);

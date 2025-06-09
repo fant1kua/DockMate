@@ -16,12 +16,14 @@ import (
 var assets embed.FS
 
 var appobj *app.App
-var dockerService *app.DockerService
+var dockerContainersService *app.DockerContainersService
+var dockerImagesService *app.DockerImagesService
 
 func main() {
 	// Create an instance of the app structure
 	appobj = app.NewApp()
-	dockerService = app.NewDockerService()
+	dockerContainersService = app.NewDockerCOntainersService()
+	dockerImagesService = app.NewDockerImagesService()
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -36,7 +38,8 @@ func main() {
 		Frameless:        true,
 		Bind: []interface{}{
 			appobj,
-			dockerService,
+			dockerContainersService,
+			dockerImagesService,
 		},
 	})
 
@@ -52,5 +55,6 @@ func startup(ctx context.Context) {
 		return
 	}
 	app.Startup(appobj, ctx, cli)
-	app.StartupDockerService(dockerService, ctx, cli)
+	app.StartupDockerContainersService(dockerContainersService, ctx, cli)
+	app.StartupDockerImagesService(dockerImagesService, ctx, cli)
 }

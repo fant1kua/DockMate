@@ -1,38 +1,38 @@
 <script lang="ts">
     import { isError } from "../utils";
     import {
-        ListContainers,
+        List,
         StartWatching,
         StopWatching,
-        StartContainer,
-        StopContainer,
-        RestartContainer,
-        RemoveContainer,
-        KillContainer,
-    } from '@app/DockerService'
-    import type { app } from "../../wailsjs/go/models";
+        Start,
+        Stop,
+        Restart,
+        Remove,
+        Kill,
+    } from '@app/app/DockerContainersService';
+    import type { app } from "@app/models";
+    import { EventsOff, EventsOn } from "@runtime/runtime";
     import toast from 'svelte-5-french-toast';
     import CopyBtn from "./CopyBtn.svelte";
     import ConteinerLogs from "./ConteinerLogs.svelte";
     import ConteinerInspect from "./ConteinerInspect.svelte";
     import ContainerTerminal from "./ContainerTerminal.svelte";
-    import { EventsOff, EventsOn } from "../../wailsjs/runtime/runtime";
 
     type IAction = 'logs' | 'inspect' | 'terminal'
 
-    let projects = $state<app.ContainersGroup[]>([]);
+    let list = $state<app.ContainersGroup[]>([]);
     let loading = $state<boolean>(false);
     let container = $state<app.ContainerInfo | null>(null)
     let action = $state<IAction>('logs')
     let inAction = $state<boolean>(false);
 
-    async function loadContainers() {
+    async function load() {
         if (inAction) {
             return;
         }
         loading = true;
         try {
-            projects = await ListContainers();
+            list = await List();
         } catch (e) {
             toast.error(e instanceof Error ? e.message : 'Failed to load containers');
         } finally {
@@ -43,9 +43,8 @@
     async function handleStartContainer(id: string) {
         try {
             inAction = true;
-            await StartContainer(id);
+            await Start(id);
             toast.success('Container started');
-            await loadContainers();
         } catch (e) {
             toast.error(isError(e) ? e.message : 'Failed to start container');
         } finally {
@@ -56,9 +55,8 @@
     async function handleStopContainer(id: string) {
         try {
             inAction = true;
-            await StopContainer(id);
+            await Stop(id);
             toast.success('Container stopped');
-            await loadContainers();
         } catch (e) {
             toast.error(isError(e) ? e.message : 'Failed to stop container');
         } finally {
@@ -69,9 +67,8 @@
     async function handleRestartContainer(id: string) {
         try {
             inAction = true;
-            await RestartContainer(id);
+            await Restart(id);
             toast.success('Container restarted');
-            await loadContainers();
         } catch (e) {
             toast.error(isError(e) ? e.message : 'Failed to restart container');
         } finally {
@@ -82,9 +79,8 @@
     async function handleRemoveContainer(id: string) {
         try {
             inAction = true;
-            await RemoveContainer(id);
+            await Remove(id);
             toast.success('Container removed');
-            await loadContainers();
         } catch (e) {
             toast.error(isError(e) ? e.message : 'Failed to remove container');
         } finally {
@@ -95,9 +91,8 @@
     async function handleKillContainer(id: string) {
         try {
             inAction = true;
-            await KillContainer(id);
+            await Kill(id);
             toast.success('Container killed');
-            await loadContainers();
         } catch (e) {
             toast.error(isError(e) ? e.message : 'Failed to kill container');
         } finally {
@@ -115,20 +110,18 @@
 	}
 
     $effect(() => {
-        loadContainers();
-        // const interval = setInterval(loadContainers, 3000);
-        // return () => clearInterval(interval);
+        load();
     });
 
     $effect(() => {
-        EventsOn("containersUpdated", (p: app.ContainersGroup[]) => {
-          projects = p
+        EventsOn("docker:containers", (l: app.ContainersGroup[]) => {
+          list = l
         });
 
         StartWatching();
 
         return () => {
-            EventsOff('containersUpdated');
+            EventsOff('docker:containers');
             StopWatching();
         }
     });
@@ -136,17 +129,17 @@
 
 <button 
     class="w-full bg-latte-surface2 dark:bg-mocha-surface2 p-2 rounded hover:bg-latte-surface3 dark:hover:bg-mocha-surface3"
-    onclick={() => loadContainers()}
+    onclick={() => load()}
     disabled={loading || inAction}
 >
     {loading ? 'Loading...' : 'Refresh Containers'}
 </button>
 
 <div class="grid gap-4">
-    {#if !projects || projects.length === 0}
+    {#if !list || list.length === 0}
         <div class="text-center text-gray-500">No containers found</div>
     {:else}
-        {#each projects as project}
+        {#each list as project}
             <details class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded" open>
                 <summary class="text-xl font-bold mb-1">{project.name}</summary>
                 {#if !project.containers || project.containers.length === 0}
