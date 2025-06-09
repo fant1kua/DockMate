@@ -12,10 +12,6 @@ export function ExecContainer(arg1:string,arg2:string):Promise<void>;
 
 export function GetContainerLogs(arg1:string):Promise<string>;
 
-export function ListContainers():Promise<Array<app.ContainerInfo>>;
-
-export function ListContainersByCompose():Promise<Array<app.ComposeProject>>;
-
 export function ListImages():Promise<Array<app.ImageInfo>>;
 
 export function ListVolumes():Promise<Array<app.VolumeInfo>>;

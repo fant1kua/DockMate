@@ -29,54 +29,6 @@ func NewApp() *App {
 func Startup(a *App, ctx context.Context, cli *client.Client) {
 	a.ctx = ctx
 	a.cli = cli
-
-	ticker := time.NewTicker(5 * time.Second)
-	for {
-			<-ticker.C
-			containers, err := cli.ContainerList(a.ctx, container.ListOptions{All: true})
-			if err == nil {
-				// Map to store containers by project
-				projectMap := make(map[string][]ContainerInfo)
-				standaloneContainers := []ContainerInfo{}
-
-				for _, container := range containers {
-					containerInfo := ContainerInfo{
-						ID:     container.ID[:12],
-						Names:  container.Names,
-						Image:  container.Image,
-						Status: container.Status,
-						State:  container.State,
-					}
-
-					// Check for compose project label
-					projectName := container.Labels["com.docker.compose.project"]
-					if projectName != "" {
-						projectMap[projectName] = append(projectMap[projectName], containerInfo)
-					} else {
-						standaloneContainers = append(standaloneContainers, containerInfo)
-					}
-				}
-
-				// Convert map to slice of ComposeProject
-				var projects []ComposeProject
-				for name, containers := range projectMap {
-					projects = append(projects, ComposeProject{
-						Name:       name,
-						Containers: containers,
-					})
-				}
-
-				// Add standalone containers as a special project
-				if len(standaloneContainers) > 0 {
-					projects = append(projects, ComposeProject{
-						Name:       "Standalone",
-						Containers: standaloneContainers,
-					})
-				}
-				runtime.EventsEmit(a.ctx, "containersUpdated", projects)
-			}
-			
-	}
 }
 
 func (a *App) QuitApp() {
@@ -94,14 +46,6 @@ func (a *App) MinimiseApp() {
 	runtime.WindowMinimise(a.ctx)
 }
 
-type ContainerInfo struct {
-	ID     string   `json:"id"`
-	Names  []string `json:"names"`
-	Image  string   `json:"image"`
-	Status string   `json:"status"`
-	State  string   `json:"state"`
-}
-
 type ImageInfo struct {
 	ID        string   `json:"id"`
 	Name      string   `json:"name"`
@@ -116,34 +60,6 @@ type VolumeInfo struct {
 	Size      int64    `json:"size"`
 	Tags      []string `json:"tags"`
 	CreatedAt string   `json:"createdAt"`
-}
-
-type ComposeProject struct {
-	Name       string          `json:"name"`
-	Containers []ContainerInfo `json:"containers"`
-}
-
-func (a *App) ListContainers() ([]ContainerInfo, error) {
-	if a.cli == nil {
-		return nil, fmt.Errorf("Docker client not initialized")
-	}
-	containers, err := a.cli.ContainerList(a.ctx, container.ListOptions{All: true})
-	if err != nil {
-		return nil, fmt.Errorf("failed to list containers: %v", err)
-	}
-
-	var containerInfos []ContainerInfo
-	for _, container := range containers {
-		containerInfos = append(containerInfos, ContainerInfo{
-			ID:     container.ID[:12],
-			Names:  container.Names,
-			Image:  container.Image,
-			Status: container.Status,
-			State:  container.State,
-		})
-	}
-
-	return containerInfos, nil
 }
 
 func (a *App) GetContainerLogs(containerID string) (string, error) {
@@ -349,56 +265,4 @@ func (a *App) CreateAndStartContainer(imageID string) error {
 	}
 
 	return nil
-}
-
-func (a *App) ListContainersByCompose() ([]ComposeProject, error) {
-	if a.cli == nil {
-		return nil, fmt.Errorf("Docker client not initialized")
-	}
-
-	containers, err := a.cli.ContainerList(a.ctx, container.ListOptions{All: true})
-	if err != nil {
-		return nil, fmt.Errorf("failed to list containers: %v", err)
-	}
-
-	// Map to store containers by project
-	projectMap := make(map[string][]ContainerInfo)
-	standaloneContainers := []ContainerInfo{}
-
-	for _, container := range containers {
-		containerInfo := ContainerInfo{
-			ID:     container.ID[:12],
-			Names:  container.Names,
-			Image:  container.Image,
-			Status: container.Status,
-			State:  container.State,
-		}
-
-		// Check for compose project label
-		projectName := container.Labels["com.docker.compose.project"]
-		if projectName != "" {
-			projectMap[projectName] = append(projectMap[projectName], containerInfo)
-		} else {
-			standaloneContainers = append(standaloneContainers, containerInfo)
-		}
-	}
-
-	// Convert map to slice of ComposeProject
-	var projects []ComposeProject
-	for name, containers := range projectMap {
-		projects = append(projects, ComposeProject{
-			Name:       name,
-			Containers: containers,
-		})
-	}
-
-	// Add standalone containers as a special project
-	if len(standaloneContainers) > 0 {
-		projects = append(projects, ComposeProject{
-			Name:       "Standalone",
-			Containers: standaloneContainers,
-		})
-	}
-
-	return projects, nil
 }

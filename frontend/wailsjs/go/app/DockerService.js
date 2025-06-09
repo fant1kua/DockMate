@@ -10,6 +10,10 @@ export function KillContainer(arg1) {
   return window['go']['app']['DockerService']['KillContainer'](arg1);
 }
 
+export function ListContainers() {
+  return window['go']['app']['DockerService']['ListContainers']();
+}
+
 export function RemoveContainer(arg1) {
   return window['go']['app']['DockerService']['RemoveContainer'](arg1);
 }
@@ -22,10 +26,14 @@ export function StartContainer(arg1) {
   return window['go']['app']['DockerService']['StartContainer'](arg1);
 }
 
-export function StartWatchingContainers() {
-  return window['go']['app']['DockerService']['StartWatchingContainers']();
+export function StartWatching() {
+  return window['go']['app']['DockerService']['StartWatching']();
 }
 
 export function StopContainer(arg1) {
   return window['go']['app']['DockerService']['StopContainer'](arg1);
+}
+
+export function StopWatching() {
+  return window['go']['app']['DockerService']['StopWatching']();
 }

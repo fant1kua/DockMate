@@ -20,12 +20,12 @@ export namespace app {
 	        this.state = source["state"];
 	    }
 	}
-	export class ComposeProject {
+	export class ContainersGroup {
 	    name: string;
 	    containers: ContainerInfo[];
 	
 	    static createFrom(source: any = {}) {
-	        return new ComposeProject(source);
+	        return new ContainersGroup(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -52,7 +52,6 @@ export namespace app {
 		    return a;
 		}
 	}
-	
 	export class ImageInfo {
 	    id: string;
 	    name: string;

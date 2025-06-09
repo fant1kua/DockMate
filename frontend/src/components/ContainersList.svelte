@@ -1,9 +1,9 @@
 <script lang="ts">
     import { isError } from "../utils";
     import {
-        ListContainersByCompose,
-    } from "../../wailsjs/go/app/App";
-    import {
+        ListContainers,
+        StartWatching,
+        StopWatching,
         StartContainer,
         StopContainer,
         RestartContainer,
@@ -20,7 +20,7 @@
 
     type IAction = 'logs' | 'inspect' | 'terminal'
 
-    let projects = $state<app.ComposeProject[]>([]);
+    let projects = $state<app.ContainersGroup[]>([]);
     let loading = $state<boolean>(false);
     let container = $state<app.ContainerInfo | null>(null)
     let action = $state<IAction>('logs')
@@ -32,7 +32,7 @@
         }
         loading = true;
         try {
-            projects = await ListContainersByCompose() ?? [];
+            projects = await ListContainers();
         } catch (e) {
             toast.error(e instanceof Error ? e.message : 'Failed to load containers');
         } finally {
@@ -121,12 +121,15 @@
     });
 
     $effect(() => {
-        EventsOn("containersUpdated", (p: app.ComposeProject[]) => {
+        EventsOn("containersUpdated", (p: app.ContainersGroup[]) => {
           projects = p
         });
 
+        StartWatching();
+
         return () => {
             EventsOff('containersUpdated');
+            StopWatching();
         }
     });
 </script>
