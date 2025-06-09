@@ -10,10 +10,6 @@ export function ExecContainer(arg1, arg2) {
   return window['go']['app']['App']['ExecContainer'](arg1, arg2);
 }
 
-export function GetContainerLogs(arg1) {
-  return window['go']['app']['App']['GetContainerLogs'](arg1);
-}
-
 export function MaximiseApp() {
   return window['go']['app']['App']['MaximiseApp']();
 }
@@ -24,12 +20,4 @@ export function MinimiseApp() {
 
 export function QuitApp() {
   return window['go']['app']['App']['QuitApp']();
-}
-
-export function StopContainerLogs() {
-  return window['go']['app']['App']['StopContainerLogs']();
-}
-
-export function StreamContainerLogs(arg1) {
-  return window['go']['app']['App']['StreamContainerLogs'](arg1);
 }

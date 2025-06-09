@@ -1,9 +1,14 @@
 <script lang="ts">
-    import { StreamContainerLogs, StopContainerLogs } from "../../wailsjs/go/app/App";
-    import { app } from "../../wailsjs/go/models";
-	import { EventsOff, EventsOn } from "../../wailsjs/runtime/runtime";
-	import { Terminal } from 'xterm';
+    import { Terminal } from 'xterm';
   	import 'xterm/css/xterm.css';
+    import { FitAddon } from 'xterm-addon-fit';
+    import { WebLinksAddon } from 'xterm-addon-web-links';
+    import {
+        StartWatching,
+        StopWatching,
+    } from "@app/app/DockerLogsService";
+    import type { app } from "@app/models";
+    import { EventsOff, EventsOn } from "@runtime/runtime";
 
     let { container, onClose } = $props<{
         container: app.ContainerInfo | null;
@@ -25,18 +30,26 @@
             },
         });
 
+        // Initialize addons
+        const fitAddon = new FitAddon();
+        const webLinksAddon = new WebLinksAddon();
+
+        // Add addons to terminal
+        terminal.loadAddon(fitAddon);
+        terminal.loadAddon(webLinksAddon);
+
         terminal.open(containerElement);
 
         if (container) {
-            StreamContainerLogs(container.id);
-            EventsOn("logStream", (line: string) => {
+            EventsOn("docker:logs", (line: string) => {
                 terminal.writeln(line);
             });
+            StartWatching(container.id);
         }
 
         return () => {
-            EventsOff('logStream');
-            StopContainerLogs();
+            StopWatching();
+            EventsOff('docker:logs');
             terminal.dispose();
         }
     });

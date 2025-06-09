@@ -5,14 +5,8 @@ export function CreateAndStartContainer(arg1:string):Promise<void>;
 
 export function ExecContainer(arg1:string,arg2:string):Promise<void>;
 
-export function GetContainerLogs(arg1:string):Promise<string>;
-
 export function MaximiseApp():Promise<void>;
 
 export function MinimiseApp():Promise<void>;
 
 export function QuitApp():Promise<void>;
-
-export function StopContainerLogs():Promise<void>;
-
-export function StreamContainerLogs(arg1:string):Promise<void>;

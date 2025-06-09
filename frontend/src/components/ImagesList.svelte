@@ -64,12 +64,11 @@
         EventsOn("docker:images", (l: app.ImageInfo[]) => {
           list = l
         });
-
         StartWatching();
 
         return () => {
-            EventsOff('docker:images');
             StopWatching();
+            EventsOff('docker:images');
         }
     });
 </script>

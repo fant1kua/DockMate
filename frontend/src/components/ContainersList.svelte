@@ -117,12 +117,11 @@
         EventsOn("docker:containers", (l: app.ContainersGroup[]) => {
           list = l
         });
-
         StartWatching();
 
         return () => {
-            EventsOff('docker:containers');
             StopWatching();
+            EventsOff('docker:containers');
         }
     });
 </script>

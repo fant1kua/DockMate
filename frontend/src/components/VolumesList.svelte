@@ -50,12 +50,11 @@
         EventsOn("docker:images", (l: app.VolumeInfo[]) => {
           list = l
         });
-
         StartWatching();
 
         return () => {
-            EventsOff('docker:images');
             StopWatching();
+            EventsOff('docker:images');
         }
     });
 </script>

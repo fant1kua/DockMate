@@ -3,8 +3,12 @@
     import { FitAddon } from 'xterm-addon-fit';
     import { WebLinksAddon } from 'xterm-addon-web-links';
     import { WebglAddon } from 'xterm-addon-webgl';
-    import type { app } from "../../wailsjs/go/models";
-    import { StreamContainerLogs, StopContainerLogs, ExecContainer } from "../../wailsjs/go/app/App";
+    import {
+        StartWatching,
+        StopWatching,
+    } from "@app/app/DockerLogsService";
+    import type { app } from "@app/models";
+    import { ExecContainer } from "../../wailsjs/go/app/App";
     import { EventsOff, EventsOn } from "../../wailsjs/runtime/runtime";
 
     let { container, onClose } = $props<{
@@ -45,8 +49,8 @@
         terminal.open(terminalElement);
 
         if (container) {
-            StreamContainerLogs(container.id);
-            EventsOn("logStream", (line: string) => {
+            StartWatching(container.id);
+            EventsOn("docker:logs", (line: string) => {
                 terminal.writeln(line);
             });
 
@@ -82,8 +86,8 @@
         }
 
         return () => {
-            EventsOff('logStream');
-            StopContainerLogs();
+            EventsOff('docker:logs');
+            StopWatching();
             terminal.dispose();
         }
     });
