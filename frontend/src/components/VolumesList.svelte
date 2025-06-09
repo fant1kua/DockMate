@@ -62,14 +62,14 @@
     });
 
     $effect(() => {
-        EventsOn("docker:images", (l: app.VolumeInfo[]) => {
+        EventsOn("docker:volumes", (l: app.VolumeInfo[]) => {
           list = l
         });
         StartWatching();
 
         return () => {
             StopWatching();
-            EventsOff('docker:images');
+            EventsOff('docker:volumes');
         }
     });
 </script>
