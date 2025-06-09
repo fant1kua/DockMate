@@ -1,4 +1,5 @@
 <script lang="ts">
+    import toast from 'svelte-5-french-toast';
     import { isError, formatBytes } from "../utils";
     import {
         CreateAndStartContainer,
@@ -11,8 +12,6 @@
 	} from "@app/app/DockerImagesService";
     import type { app } from "@app/models";
     import { EventsOff, EventsOn } from "@runtime/runtime";
-
-    import toast from 'svelte-5-french-toast';
     import CopyBtn from "./CopyBtn.svelte";
 
     let list = $state<app.ImageInfo[]>([]);

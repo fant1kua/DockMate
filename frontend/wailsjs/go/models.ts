@@ -54,7 +54,6 @@ export namespace app {
 	}
 	export class ImageInfo {
 	    id: string;
-	    name: string;
 	    size: number;
 	    tags: string[];
 	    createdAt: string;
@@ -66,7 +65,6 @@ export namespace app {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
-	        this.name = source["name"];
 	        this.size = source["size"];
 	        this.tags = source["tags"];
 	        this.createdAt = source["createdAt"];

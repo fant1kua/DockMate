@@ -15,8 +15,8 @@ import (
 
 type DockerContainersService struct {
 	DockerBaseService
-	cancel	context.CancelFunc
-	mu     	sync.Mutex
+	cancel context.CancelFunc
+	mu     sync.Mutex
 }
 
 type ContainerInfo struct {
@@ -42,7 +42,7 @@ func StartupDockerContainersService(s *DockerContainersService, ctx context.Cont
 }
 
 func (s *DockerContainersService) List() ([]ContainersGroup, error) {
-	if s.cli == nil {
+	if s.cli == nil || s.ctx == nil {
 		return nil, fmt.Errorf("Docker client not initialized")
 	}
 	list, err := s.cli.ContainerList(s.ctx, container.ListOptions{All: true})
@@ -50,30 +50,35 @@ func (s *DockerContainersService) List() ([]ContainersGroup, error) {
 		return nil, fmt.Errorf("failed to list containers: %v", err)
 	}
 
-	return s.formatList(list), nil
+	result := s.formatList(list)
+	return result, nil
 }
 
-func (s *DockerContainersService) StartWatching() {
+func (s *DockerContainersService) StartWatching() error {
+	if s.cli == nil || s.ctx == nil {
+		return fmt.Errorf("Docker client not initialized")
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	// Don't start multiple listeners
 	if s.cancel != nil {
-		return
+		return nil
 	}
-	
+
 	s.sendListUpdate()
 
 	ctx, cancel := context.WithCancel(s.ctx)
 	s.cancel = cancel
-	
+
 	go func() {
 		eventFilter := filters.NewArgs()
-    eventFilter.Add("type", "container")
+		eventFilter.Add("type", "container")
 		eventsChan, errs := s.cli.Events(ctx, events.ListOptions{
 			Filters: eventFilter,
 		})
-		
+
 		for {
 			select {
 			case event := <-eventsChan:
@@ -91,12 +96,14 @@ func (s *DockerContainersService) StartWatching() {
 			}
 		}
 	}()
+
+	return nil
 }
- 
+
 func (s *DockerContainersService) StopWatching() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	if s.cancel != nil {
 		s.cancel()
 		s.cancel = nil
@@ -144,7 +151,7 @@ func (s *DockerContainersService) formatList(containers []container.Summary) []C
 
 	return projects
 }
- 
+
 func (s *DockerContainersService) sendListUpdate() {
 	containers, err := s.cli.ContainerList(s.ctx, container.ListOptions{All: true})
 	if err != nil {
@@ -156,43 +163,43 @@ func (s *DockerContainersService) sendListUpdate() {
 }
 
 func (s *DockerContainersService) Start(id string) error {
-	if s.cli == nil {
+	if s.cli == nil || s.ctx == nil {
 		return fmt.Errorf("Docker client not initialized")
 	}
 	return s.cli.ContainerStart(s.ctx, id, container.StartOptions{})
 }
 
 func (s *DockerContainersService) Stop(id string) error {
-	if s.cli == nil {
+	if s.cli == nil || s.ctx == nil {
 		return fmt.Errorf("Docker client not initialized")
 	}
 	return s.cli.ContainerStop(s.ctx, id, container.StopOptions{})
 }
 
 func (s *DockerContainersService) Restart(id string) error {
-	if s.cli == nil {
+	if s.cli == nil || s.ctx == nil {
 		return fmt.Errorf("Docker client not initialized")
 	}
 	return s.cli.ContainerRestart(s.ctx, id, container.StopOptions{})
 }
 
 func (s *DockerContainersService) Remove(id string) error {
-	if s.cli == nil {
+	if s.cli == nil || s.ctx == nil {
 		return fmt.Errorf("Docker client not initialized")
 	}
 	return s.cli.ContainerRemove(s.ctx, id, container.RemoveOptions{})
 }
 
 func (s *DockerContainersService) Kill(id string) error {
-	if s.cli == nil {
+	if s.cli == nil || s.ctx == nil {
 		return fmt.Errorf("Docker client not initialized")
 	}
 	return s.cli.ContainerKill(s.ctx, id, "SIGKILL")
 }
 
 func (s *DockerContainersService) Inspect(id string) (string, error) {
-	if s.cli == nil {
-		return "", fmt.Errorf("Docker client not initialized")
+	if s.cli == nil || s.ctx == nil {
+		return "{}", fmt.Errorf("Docker client not initialized")
 	}
 	_, raw, err := s.cli.ContainerInspectWithRaw(s.ctx, id, false)
 	if err != nil {

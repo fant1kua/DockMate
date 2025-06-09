@@ -18,12 +18,14 @@ var assets embed.FS
 var appobj *app.App
 var dockerContainersService *app.DockerContainersService
 var dockerImagesService *app.DockerImagesService
+var dockerVolumesService *app.DockerVolumesService
 
 func main() {
 	// Create an instance of the app structure
 	appobj = app.NewApp()
 	dockerContainersService = app.NewDockerCOntainersService()
 	dockerImagesService = app.NewDockerImagesService()
+	dockerVolumesService = app.NewDockerVolumesService()
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -40,6 +42,7 @@ func main() {
 			appobj,
 			dockerContainersService,
 			dockerImagesService,
+			dockerVolumesService,
 		},
 	})
 
@@ -57,4 +60,5 @@ func startup(ctx context.Context) {
 	app.Startup(appobj, ctx, cli)
 	app.StartupDockerContainersService(dockerContainersService, ctx, cli)
 	app.StartupDockerImagesService(dockerImagesService, ctx, cli)
+	app.StartupDockerVolumesService(dockerVolumesService, ctx, cli)
 }

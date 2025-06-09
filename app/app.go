@@ -7,7 +7,6 @@ import (
 	"io"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -20,8 +19,8 @@ type App struct {
 }
 
 type DockerBaseService struct {
-	ctx    context.Context
-	cli    *client.Client
+	ctx context.Context
+	cli *client.Client
 }
 
 func NewApp() *App {
@@ -46,14 +45,6 @@ func (a *App) MaximiseApp() {
 
 func (a *App) MinimiseApp() {
 	runtime.WindowMinimise(a.ctx)
-}
-
-type VolumeInfo struct {
-	ID        string   `json:"id"`
-	Name      string   `json:"name"`
-	Size      int64    `json:"size"`
-	Tags      []string `json:"tags"`
-	CreatedAt string   `json:"createdAt"`
 }
 
 func (a *App) GetContainerLogs(containerID string) (string, error) {
@@ -130,34 +121,6 @@ func (a *App) StopContainerLogs() {
 		a.logStreamCancel()
 		a.logStreamCancel = nil
 	}
-}
-
-func (a *App) ListVolumes() ([]VolumeInfo, error) {
-	if a.cli == nil {
-		return nil, fmt.Errorf("Docker client not initialized")
-	}
-	volumes, err := a.cli.VolumeList(a.ctx, volume.ListOptions{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to list images: %v", err)
-	}
-
-	var volumeInfos []VolumeInfo
-	for _, vol := range volumes.Volumes {
-		volumeInfos = append(volumeInfos, VolumeInfo{
-			Name:      vol.Name,
-			CreatedAt: vol.CreatedAt,
-		})
-	}
-
-	return volumeInfos, nil
-}
-
-func (a *App) DeleteVolume(id string) error {
-	if a.cli == nil {
-		return fmt.Errorf("Docker client not initialized")
-	}
-	err := a.cli.VolumeRemove(a.ctx, id, true)
-	return err
 }
 
 func (a *App) ExecContainer(containerID string, command string) error {

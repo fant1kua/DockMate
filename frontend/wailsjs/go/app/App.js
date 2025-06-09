@@ -6,20 +6,12 @@ export function CreateAndStartContainer(arg1) {
   return window['go']['app']['App']['CreateAndStartContainer'](arg1);
 }
 
-export function DeleteVolume(arg1) {
-  return window['go']['app']['App']['DeleteVolume'](arg1);
-}
-
 export function ExecContainer(arg1, arg2) {
   return window['go']['app']['App']['ExecContainer'](arg1, arg2);
 }
 
 export function GetContainerLogs(arg1) {
   return window['go']['app']['App']['GetContainerLogs'](arg1);
-}
-
-export function ListVolumes() {
-  return window['go']['app']['App']['ListVolumes']();
 }
 
 export function MaximiseApp() {
