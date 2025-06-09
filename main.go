@@ -33,9 +33,11 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "DockMate",
-		Width:  1024,
-		Height: 768,
+		Title:     "DockMate",
+		Width:     1024,
+		Height:    768,
+		MinWidth:  320,
+		MinHeight: 240,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
