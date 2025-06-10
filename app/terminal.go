@@ -21,9 +21,8 @@ type TerminalSession struct {
 type DockerContainersTerminal struct {
 	DockerBaseService
 	lock sync.RWMutex
+	session *TerminalSession
 }
-
-var session *TerminalSession
 
 func NewDockerTerminalService() *DockerContainersTerminal {
 	return &DockerContainersTerminal{}
@@ -76,7 +75,7 @@ func (s *DockerContainersTerminal) StartInteractiveTerminal(id string) error {
 	}
 
 	s.lock.Lock()
-	session = &TerminalSession{
+	s.session = &TerminalSession{
 		stdin: resp.Conn,
 		done:        make(chan struct{}),
 	}
@@ -89,7 +88,7 @@ func (s *DockerContainersTerminal) StartInteractiveTerminal(id string) error {
 		buf := make([]byte, 4096)
 		for {
 			select {
-			case <-session.done:
+			case <-s.session.done:
 				return
 			default:
 				n, err := reader.Read(buf)
@@ -112,22 +111,22 @@ func (s *DockerContainersTerminal) SendToTerminal(input string) error {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	if session == nil {
+	if s.session == nil {
 		return nil
 	}
 
-	_, err := session.stdin.Write([]byte(input))
+	_, err := s.session.stdin.Write([]byte(input))
 	return err
 }
 
 // Close session cleanly
 func (s *DockerContainersTerminal) CloseTerminal() {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-	if session != nil {
-		close(session.done)
-		session.stdin.Close()
-		session = nil
+	if s.session != nil {
+		close(s.session.done)
+		s.session.stdin.Close()
+		s.session = nil
 	}
 }
