@@ -20,7 +20,6 @@ type TerminalSession struct {
 
 type DockerContainersTerminal struct {
 	DockerBaseService
-	// sessions map[string]*TerminalSession
 	lock sync.RWMutex
 }
 
@@ -70,19 +69,20 @@ func (s *DockerContainersTerminal) StartInteractiveTerminal(id string, sessionID
 	go func() {
 		defer resp.Close()
 		reader := bufio.NewReader(resp.Reader)
+		buf := make([]byte, 4096)
 		for {
 			select {
 			case <-session.done:
 				return
 			default:
-				line, err := reader.ReadString('\n')
+				n, err := reader.Read(buf)
 				if err != nil {
 					if err != io.EOF {
 						runtime.EventsEmit(s.ctx, "docker:output", fmt.Sprintf("Error: %v", err))
 					}
 					return
 				}
-				runtime.EventsEmit(s.ctx, "docker:output", line)
+				runtime.EventsEmit(s.ctx, "docker:output", string(buf[:n]))
 			}
 		}
 	}()

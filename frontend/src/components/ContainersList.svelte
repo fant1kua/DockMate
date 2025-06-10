@@ -247,4 +247,6 @@
 </div>
 <ConteinerLogs  container={action === 'logs' ? container : null} onClose={handleClose} />
 <Inspect type="container" id={action === 'inspect' ? container?.id : null} onClose={handleClose} />
-<ContainerTerminal container={action === 'terminal' ? container : null} onClose={handleClose} />
+{#if action === 'terminal' && container !== null}
+    <ContainerTerminal container={container} onClose={handleClose} />
+{/if}
