@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 
 	"github.com/docker/docker/api/types/container"
@@ -38,8 +39,26 @@ func (s *DockerContainersTerminal) StartInteractiveTerminal(id string) error {
 		return fmt.Errorf("Docker client not initialized")
 	}
 
+	shell := "sh"
+	checkCmd := []string{"which", "bash"}
+	execCheck, err := s.cli.ContainerExecCreate(s.ctx, id, container.ExecOptions{
+		Cmd:          checkCmd,
+		AttachStdout: true,
+		AttachStderr: true,
+	})
+	if err == nil {
+		checkResp, err := s.cli.ContainerExecAttach(s.ctx, execCheck.ID, container.ExecAttachOptions{})
+		if err == nil {
+			defer checkResp.Close()
+			output, _ := io.ReadAll(checkResp.Reader)
+			if strings.Contains(string(output), "bash") {
+				shell = "bash"
+			}
+		}
+	}
+
 	execConfig := container.ExecOptions{
-		Cmd:          []string{"bash"}, // or "sh" if bash is unavailable
+		Cmd:          []string{shell},
 		AttachStdin:  true,
 		AttachStdout: true,
 		AttachStderr: true,
