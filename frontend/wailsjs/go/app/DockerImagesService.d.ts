@@ -10,6 +10,8 @@ export function List():Promise<Array<app.ImageInfo>>;
 
 export function Remove(arg1:string):Promise<void>;
 
+export function Save(arg1:string):Promise<void>;
+
 export function StartWatching():Promise<void>;
 
 export function StopWatching():Promise<void>;

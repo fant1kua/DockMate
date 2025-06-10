@@ -103,7 +103,7 @@
                 <div class="mt-4 flex gap-2">
                     <button
                         aria-label="Remove"
-                        class="text-red-500 hover:text-red-600 px-3 py-1 rounded disabled:opacity-50"
+                        class="text-red-500 hover:text-red-600 px-2 py-1 rounded disabled:opacity-50"
                         onclick={() => handleDeleteVolume(item.name)}
                         disabled={inAction}
                     >
@@ -111,7 +111,7 @@
                     </button>
 
                     <button 
-                        class="bg-green-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        class="bg-green-500 hover:bg-red-600 text-white px-2 py-1 rounded"
                         onclick={() => handleAction(item, 'inspect')}
                     >
                         Inspect

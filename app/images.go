@@ -1,8 +1,11 @@
 package app
 
 import (
+	"compress/gzip"
 	"context"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -151,6 +154,49 @@ func (s *DockerImagesService) Inspect(id string) (string, error) {
 	}
 
 	return string(raw), nil
+}
+
+func (s *DockerImagesService) Save(id string) error {
+	if s.cli == nil || s.ctx == nil {
+		return fmt.Errorf("Docker client not initialized")
+	}
+
+	savePath, err := runtime.SaveFileDialog(s.ctx, runtime.SaveDialogOptions{
+		Title:              "Save Docker Image",
+		DefaultFilename:    fmt.Sprintf("%s.tar.gz", id),
+		Filters:            []runtime.FileFilter{{DisplayName: "Gzip Files", Pattern: "*.tar.gz"}},
+	})
+	if err != nil {
+		return fmt.Errorf("dialog error: %w", err)
+	}
+	if savePath == "" {
+		return fmt.Errorf("no path selected")
+	}
+
+	imageReader, err := s.cli.ImageSave(s.ctx, []string{id})
+	if err != nil {
+		return err
+	}
+	defer imageReader.Close()
+
+	// Create output file for compressed image
+	outFile, err := os.Create(savePath)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	// Create gzip writer
+	gzipWriter := gzip.NewWriter(outFile)
+	defer gzipWriter.Close()
+
+	// Copy the image stream into the gzip writer
+	_, err = io.Copy(gzipWriter, imageReader)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *DockerImagesService) CreateAndStart(id string) error {

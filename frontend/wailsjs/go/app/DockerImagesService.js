@@ -18,6 +18,10 @@ export function Remove(arg1) {
   return window['go']['app']['DockerImagesService']['Remove'](arg1);
 }
 
+export function Save(arg1) {
+  return window['go']['app']['DockerImagesService']['Save'](arg1);
+}
+
 export function StartWatching() {
   return window['go']['app']['DockerImagesService']['StartWatching']();
 }

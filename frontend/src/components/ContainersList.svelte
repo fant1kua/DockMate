@@ -179,7 +179,7 @@
                                 {#if item.state !== 'running'}
                                     <button
                                         aria-label="Start"
-                                        class="text-green-500 hover:text-green-600 px-3 py-1 rounded disabled:opacity-50"
+                                        class="text-green-500 hover:text-green-600 px-2 py-1 rounded disabled:opacity-50"
                                         onclick={() => handleStartContainer(item.id)}
                                         disabled={inAction}
                                     >
@@ -188,7 +188,7 @@
                                 {:else}
                                     <button
                                         aria-label="Stop"
-                                        class="text-yellow-500 hover:text-yellow-600 px-3 py-1 rounded disabled:opacity-50"
+                                        class="text-yellow-500 hover:text-yellow-600 px-2 py-1 rounded disabled:opacity-50"
                                         onclick={() => handleStopContainer(item.id)}
                                         disabled={inAction}
                                     >
@@ -196,34 +196,34 @@
                                     </button>
                                     <button
                                         aria-label="Restart"
-                                        class="text-blue-500 hover:text-blue-600 px-3 py-1 rounded disabled:opacity-50"
+                                        class="text-blue-500 hover:text-blue-600 px-2 py-1 rounded disabled:opacity-50"
                                         onclick={() => handleRestartContainer(item.id)}
                                         disabled={inAction}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
                                     </button>
                                     <button 
-                                        class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded"
+                                        class="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded"
                                         onclick={() => handleAction(item, 'terminal')}
                                     >
                                         Terminal
                                     </button>
                                 {/if}
                                 <button 
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
                                     onclick={() => handleAction(item, 'logs')}
                                 >
                                     View Logs
                                 </button>
                                 <button 
-                                    class="bg-green-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                                    class="bg-green-500 hover:bg-red-600 text-white px-2 py-1 rounded"
                                     onclick={() => handleAction(item, 'inspect')}
                                 >
                                     Inspect
                                 </button>
                                 <button
                                     aria-label="Kill"
-                                    class="text-orange-500 hover:text-orange-600 px-3 py-1 rounded disabled:opacity-50"
+                                    class="text-orange-500 hover:text-orange-600 px-2 py-1 rounded disabled:opacity-50"
                                     onclick={() => handleKillContainer(item.id)}
                                     disabled={inAction}
                                 >
@@ -231,7 +231,7 @@
                                 </button>
                                 <button
                                     aria-label="Remove"
-                                    class="text-red-500 hover:text-red-600 px-3 py-1 rounded disabled:opacity-50"
+                                    class="text-red-500 hover:text-red-600 px-2 py-1 rounded disabled:opacity-50"
                                     onclick={() => handleRemoveContainer(item.id)}
                                     disabled={inAction}
                                 >

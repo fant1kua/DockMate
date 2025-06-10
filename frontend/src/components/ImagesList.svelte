@@ -7,6 +7,7 @@
         CreateAndStart,
         StartWatching,
         StopWatching,
+        Save,
 	} from "@app/app/DockerImagesService";
     import type { app } from "@app/models";
     import { EventsOff, EventsOn } from "@runtime/runtime";
@@ -51,6 +52,18 @@
         try {
             inAction = true
 			await CreateAndStart(id);
+            toast.success('Container started successfully');
+		} catch (e) {
+            toast.error(isError(e) ? e.message : 'Failed to start container');
+		} finally {
+            inAction = false
+        }
+    }
+
+    async function handleSave(id:string) {
+        try {
+            inAction = true
+			await Save(id);
             toast.success('Container started successfully');
 		} catch (e) {
             toast.error(isError(e) ? e.message : 'Failed to start container');
@@ -119,15 +132,25 @@
                 <div class="mt-4 flex gap-2">
                     <button
                         aria-label="Start Container"
-                        class="text-green-500 hover:text-green-600 px-3 py-1 rounded disabled:opacity-50"
+                        class="text-green-500 hover:text-green-600 px-2 py-1 rounded disabled:opacity-50"
                         onclick={() => handleStartContainer(item.id)}
                         disabled={inAction}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
                     </button>
+
+                    <button
+                        aria-label="Save"
+                        class="text-yellow-500 hover:text-yellow-600 px-2 py-1 rounded disabled:opacity-50"
+                        onclick={() => handleSave(item.id)}
+                        disabled={inAction}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v12q0 .825-.587 1.413T19 21H5q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h12zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
+                    </button>
+
                     <button
                         aria-label="Remove"
-                        class="text-red-500 hover:text-red-600 px-3 py-1 rounded disabled:opacity-50"
+                        class="text-red-500 hover:text-red-600 px-2 py-1 rounded disabled:opacity-50"
                         onclick={() => handleDeleteImage(item.id)}
                         disabled={inAction}
                     >
@@ -135,7 +158,7 @@
                     </button>
 
                     <button 
-                        class="bg-green-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        class="bg-green-500 hover:bg-red-600 text-white px-2 py-1 rounded"
                         onclick={() => handleAction(item, 'inspect')}
                     >
                         Inspect
