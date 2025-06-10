@@ -14,7 +14,6 @@
 
 	let title = "DockMate";
 	let page = $state<IPage>('containers')
-	
 
 	function QuitButton() {
 		QuitApp();

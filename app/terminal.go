@@ -13,9 +13,8 @@ import (
 )
 
 type TerminalSession struct {
-	stdinWriter io.WriteCloser
+	stdin io.WriteCloser
 	done        chan struct{}
-	lock        sync.Mutex
 }
 
 type DockerContainersTerminal struct {
@@ -23,7 +22,7 @@ type DockerContainersTerminal struct {
 	lock sync.RWMutex
 }
 
-var sessions = map[string]*TerminalSession{}
+var session *TerminalSession
 
 func NewDockerTerminalService() *DockerContainersTerminal {
 	return &DockerContainersTerminal{}
@@ -34,7 +33,7 @@ func StartupDockerTerminalService(s *DockerContainersTerminal, ctx context.Conte
 	s.cli = cli
 }
 
-func (s *DockerContainersTerminal) StartInteractiveTerminal(id string, sessionID string) error {
+func (s *DockerContainersTerminal) StartInteractiveTerminal(id string) error {
 	if s.cli == nil || s.ctx == nil {
 		return fmt.Errorf("Docker client not initialized")
 	}
@@ -57,12 +56,11 @@ func (s *DockerContainersTerminal) StartInteractiveTerminal(id string, sessionID
 		return err
 	}
 
-	session := &TerminalSession{
-		stdinWriter: resp.Conn,
+	s.lock.Lock()
+	session = &TerminalSession{
+		stdin: resp.Conn,
 		done:        make(chan struct{}),
 	}
-	s.lock.Lock()
-	sessions[sessionID] = session
 	s.lock.Unlock()
 
 	// Read output and emit to frontend
@@ -91,27 +89,26 @@ func (s *DockerContainersTerminal) StartInteractiveTerminal(id string, sessionID
 }
 
 // Send user input from frontend to container
-func (s *DockerContainersTerminal) SendToTerminal(sessionID string, input string) error {
+func (s *DockerContainersTerminal) SendToTerminal(input string) error {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	session, ok := sessions[sessionID]
-	if !ok {
-		return fmt.Errorf("session not found")
+	if session == nil {
+		return nil
 	}
 
-	_, err := session.stdinWriter.Write([]byte(input))
+	_, err := session.stdin.Write([]byte(input))
 	return err
 }
 
 // Close session cleanly
-func (s *DockerContainersTerminal) CloseTerminal(sessionID string) {
+func (s *DockerContainersTerminal) CloseTerminal() {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	if session, ok := sessions[sessionID]; ok {
+	if session != nil {
 		close(session.done)
-		session.stdinWriter.Close()
-		delete(sessions, sessionID)
+		session.stdin.Close()
+		session = nil
 	}
 }

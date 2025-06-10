@@ -245,8 +245,12 @@
         {/each}
     {/if}
 </div>
-<ConteinerLogs  container={action === 'logs' ? container : null} onClose={handleClose} />
-<Inspect type="container" id={action === 'inspect' ? container?.id : null} onClose={handleClose} />
-{#if action === 'terminal' && container !== null}
-    <ContainerTerminal container={container} onClose={handleClose} />
+{#if container !== null}
+    {#if action === 'logs'}
+        <ConteinerLogs  container={container} onClose={handleClose} />
+    {:else if action === 'inspect'}
+        <Inspect type="container" id={container.id} onClose={handleClose} />
+    {:else if action === 'terminal' && container !== null}
+        <ContainerTerminal container={container} onClose={handleClose} />
+    {/if}
 {/if}

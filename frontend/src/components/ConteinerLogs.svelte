@@ -15,13 +15,12 @@
 		onClose(): void;
     }>();
 
-	let terminal: Terminal;
   	let containerElement = $state<HTMLDivElement>();
 
     $effect(() => {
         if (!containerElement) return;
 
-        terminal = new Terminal({
+        const terminal = new Terminal({
             cols: 80,
             rows: 24,
             theme: {
@@ -38,14 +37,17 @@
         terminal.loadAddon(fitAddon);
         terminal.loadAddon(webLinksAddon);
 
-        terminal.open(containerElement);
+        // Open terminal in the container
+        requestAnimationFrame(() => {
+            terminal.open(containerElement);
+            fitAddon.fit();
+            terminal.focus();
+        });
 
-        if (container) {
-            EventsOn("docker:logs", (line: string) => {
-                terminal.writeln(line);
-            });
-            StartWatching(container.id);
-        }
+        EventsOn("docker:logs", (data: string) => {
+            terminal.writeln(data);
+        });
+        StartWatching(container.id);
 
         return () => {
             StopWatching();
@@ -56,22 +58,20 @@
 
 </script>
 
-{#if container}
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded-lg w-3/4 h-3/4 flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Logs for {container.names[0]}</h2>
-                <button 
-                    class="text-gray-500 hover:text-gray-700"
-                    onclick={onClose}
-                >
-                    ✕
-                </button>
-            </div>
-            <div class="flex-1 overflow-auto bg-latte-surface2 dark:bg-mocha-surface2 p-4 rounded font-mono text-sm">
-                <!-- <pre class="whitespace-pre-wrap">{logs}</pre> -->
-				<div bind:this={containerElement} class="terminal-container"></div>
-            </div>
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-latte-surface1 dark:bg-mocha-surface1 p-4 rounded-lg w-3/4 h-3/4 flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Logs for {container.names[0]}</h2>
+            <button 
+                class="text-gray-500 hover:text-gray-700"
+                onclick={onClose}
+            >
+                ✕
+            </button>
+        </div>
+        <div class="flex-1 overflow-auto bg-latte-surface2 dark:bg-mocha-surface2 p-4 rounded font-mono text-sm">
+            <!-- <pre class="whitespace-pre-wrap">{logs}</pre> -->
+            <div bind:this={containerElement} class="terminal-container"></div>
         </div>
     </div>
-{/if}
+</div>

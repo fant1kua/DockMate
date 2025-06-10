@@ -45,17 +45,16 @@
             terminal.focus();
         });
 
-        StartInteractiveTerminal(container.id, "111");
+        StartInteractiveTerminal(container.id);
 
-        terminal.onData((data) => SendToTerminal('111', data))
-        EventsOn("docker:output", (line: string) => {
-            console.info('output', line)
-            terminal.write(line);
+        terminal.onData((data) => SendToTerminal(data))
+        EventsOn("docker:output", (data: string) => {
+            terminal.write(data);
         });
 
         return () => {
             EventsOff('docker:output');
-            CloseTerminal("111");
+            CloseTerminal();
             terminal.dispose();
         }
     });
